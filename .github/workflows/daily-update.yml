@@ -1,0 +1,43 @@
+name: Daily market cache
+
+on:
+  schedule:
+    # US market closes 16:00 ET. Run 21:30 UTC year-round; trades from
+    # the previous session are always settled by then in yfinance EOD.
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-update
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Build cache
+        run: python scripts/build_cache.py
+
+      - name: Commit cache
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cache/
+          if git diff --cached --quiet; then
+            echo "No cache changes."
+            exit 0
+          fi
+          git commit -m "chore(cache): daily update $(date -u +%Y-%m-%d)"
+          git push

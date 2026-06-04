@@ -1,0 +1,25 @@
+{
+  "benchmark": "QQQ",
+  "symbols": [
+    {"symbol": "AAPL",  "name": "苹果"},
+    {"symbol": "META",  "name": "Meta"},
+    {"symbol": "NVDA",  "name": "英伟达"},
+    {"symbol": "QQQ",   "name": "纳指ETF"},
+    {"symbol": "TSLA",  "name": "特斯拉"},
+    {"symbol": "VOO",   "name": "标普ETF"},
+    {"symbol": "MU",    "name": "美光"},
+    {"symbol": "MSFT",  "name": "微软"},
+    {"symbol": "AMD",   "name": "AMD"},
+    {"symbol": "AVGO",  "name": "博通"},
+    {"symbol": "PLTR",  "name": "Palantir"},
+    {"symbol": "GOOGL", "name": "谷歌"},
+    {"symbol": "AMZN",  "name": "亚马逊"},
+    {"symbol": "ORCL",  "name": "甲骨文"},
+    {"symbol": "SMH",   "name": "半导体ETF"},
+    {"symbol": "MRVL",  "name": "迈威尔"},
+    {"symbol": "NOK",   "name": "诺基亚"},
+    {"symbol": "LITE",  "name": "Lumentum"},
+    {"symbol": "COHR",  "name": "Coherent"},
+    {"symbol": "GLW",   "name": "康宁"}
+  ]
+}
