@@ -18,7 +18,7 @@
 
 ---
 
-## 关注清单 Watchlist（20只）
+## 关注清单 Watchlist（21只）
 
 来源：`config/watchlist.json`。新增/删减改这个文件并跑 `scripts/build_cache.py`，下次 Actions 也会用新列表。
 
@@ -44,6 +44,7 @@
 | 18 | LITE | NASDAQ | Lumentum（光学器件）|
 | 19 | COHR | NYSE | Coherent（激光/光学）|
 | 20 | GLW | NYSE | 康宁（光纤/特种玻璃）|
+| 21 | ADBE | NASDAQ | Adobe |
 
 ---
 

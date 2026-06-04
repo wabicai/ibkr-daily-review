@@ -20,6 +20,7 @@
     {"symbol": "NOK",   "name": "诺基亚"},
     {"symbol": "LITE",  "name": "Lumentum"},
     {"symbol": "COHR",  "name": "Coherent"},
-    {"symbol": "GLW",   "name": "康宁"}
+    {"symbol": "GLW",   "name": "康宁"},
+    {"symbol": "ADBE",  "name": "Adobe"}
   ]
 }

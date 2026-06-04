@@ -1,6 +1,6 @@
 # ibkr-daily-review
 
-美股 watchlist 每日技术分析数据缓存。GitHub Actions 在每个交易日美东收盘后用 yfinance 抓 20 只票的 OHLCV，写入 `cache/`，本地 Claude Code 拉到后直接计算 MA20 / MA50 / RSI / 相对强弱 / 量能比，生成复盘报告。
+美股 watchlist 每日技术分析数据缓存。GitHub Actions 在每个交易日美东收盘后用 yfinance 抓 21 只票的 OHLCV，写入 `cache/`，本地 Claude Code 拉到后直接计算 MA20 / MA50 / RSI / 相对强弱 / 量能比，生成复盘报告。
 
 ## 结构
 
