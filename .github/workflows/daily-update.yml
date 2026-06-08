@@ -2,10 +2,11 @@ name: Daily market cache
 
 on:
   schedule:
-    # Pre-market snapshot: 13:00 UTC ≈ 09:00 ET (EDT) / 08:00 ET (EST) — i.e.
-    # ~30min before the 09:30 open in summer, mid pre-market in winter. Captures
-    # today's pre-market price into the cache before you trade in the morning.
-    - cron: "0 13 * * 1-5"
+    # Pre-market snapshot: 12:30 UTC = 20:30 CST (China, no DST) — 30min before
+    # the Claude review runs at 21:00 CST / 13:00 UTC. In US terms this is
+    # 08:30 ET (EDT) / 07:30 ET (EST), squarely inside the pre-market window.
+    # Captures today's pre-market price into the cache before the morning review.
+    - cron: "30 12 * * 1-5"
     # EOD: US market closes 16:00 ET. Run 21:30 UTC year-round; trades from
     # the session are always settled by then in yfinance EOD.
     - cron: "30 21 * * 1-5"
@@ -45,7 +46,7 @@ jobs:
             echo "No cache changes."
             exit 0
           fi
-          if [ "$SCHEDULE" = "0 13 * * 1-5" ]; then
+          if [ "$SCHEDULE" = "30 12 * * 1-5" ]; then
             phase="pre-market"
           else
             phase="EOD"
