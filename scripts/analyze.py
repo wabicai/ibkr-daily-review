@@ -76,6 +76,23 @@ def rs_label(v: float) -> str:
     return s + "  "
 
 
+def live_price(mdata: dict) -> tuple[float, float, bool]:
+    """Return (current_price, prev_close_ref, is_premarket).
+
+    Use the pre-market price as the live price only when it belongs to a
+    session *not yet* reflected in the daily history — i.e. its date is after
+    snapshot.as_of. In that case the reference "prev close" is the last regular
+    close (snapshot.price). Otherwise fall back to the daily close.
+    """
+    snap = mdata["snapshot"]
+    closes = mdata["history"]["close"]
+    pre = mdata.get("premarket")
+    if pre and pre.get("price") and pre["as_of"][:10] > snap["as_of"]:
+        return pre["price"], snap["price"], True
+    prev = closes[-2] if len(closes) >= 2 else snap["price"]
+    return snap["price"], prev, False
+
+
 def trend_label(price: float, m20: float | None, m50: float | None) -> str:
     if m20 is None or m50 is None:
         return "—"
@@ -124,32 +141,37 @@ def main() -> None:
 
     signals: list[tuple[str, str, dict]] = []
 
+    any_pre = False
     for sym, mdata in market.items():
-        snap = mdata["snapshot"]["price"]
         closes = mdata["history"]["close"]
         vols = mdata["history"]["volume"]
+
+        # cur = live price (pre-market when fresh, else last close);
+        # prev = the reference prior close that cur is measured against.
+        cur, prev, is_pre = live_price(mdata)
+        any_pre = any_pre or is_pre
 
         m20 = ma(closes, 20)
         m50 = ma(closes, 50)
         r = rsi(closes, 14)
-        vr = vol_ratio(vols)
+        vr = vol_ratio(vols)  # daily 5d/20d — pre-market volume is partial, not comparable
         rs = rel_strength(closes, bench_closes, 20)
-        trend = trend_label(snap, m20, m50)
+        trend = trend_label(cur, m20, m50)
 
         action = "观察/持有"
         sell = False
-        if m20 is not None and snap < m20 and vr > 1.2 and len(closes) >= 2 and snap < closes[-2]:
+        if m20 is not None and cur < m20 and vr > 1.2 and cur < prev:
             sell = True
             action = "⚠️ 趋势走弱"
-        if len(closes) >= 5 and snap < min(closes[-5:]) * 0.99:
+        if len(closes) >= 5 and cur < min(closes[-5:]) * 0.99:
             sell = True
             action = "⚠️ 跌破近期低点"
 
         if not sell:
             conds = [
-                m20 is not None and snap > m20,
+                m20 is not None and cur > m20,
                 m20 is not None and m50 is not None and m20 > m50,
-                vr > 1.5 and len(closes) >= 2 and snap > closes[-2],
+                vr > 1.5 and cur > prev,
                 r is not None and 50 <= r <= 70,
                 rs >= 0,
             ]
@@ -161,10 +183,15 @@ def main() -> None:
 
         m20_s = f"${m20:>7.2f}" if m20 else "    —  "
         m50_s = f"${m50:>7.2f}" if m50 else "    —  "
+        tag = "🌅" if is_pre else " "
         print(
-            f"  {sym:<6} ${snap:>8.2f} {m20_s:>9} {m50_s:>9} "
+            f"  {sym:<6}{tag}${cur:>8.2f} {m20_s:>9} {m50_s:>9} "
             f"{rsi_label(r):>13} {rs_label(rs):>13} {trend:>6} {vr:>6.2f}x  {action}"
         )
+
+    if any_pre:
+        print(line)
+        print("  🌅 = 当前价为今日盘前价（对比基准为昨收）；量能比/相对强弱仍按日线计算")
 
     print(f"\n{'═' * 100}")
     print("  操作建议（仅供参考，非投资建议）")
@@ -173,15 +200,18 @@ def main() -> None:
         print("  ✅ 今日无明确信号触发，watchlist 维持观察。")
     else:
         for sym, kind, mdata in signals:
-            snap = mdata["snapshot"]["price"]
             closes = mdata["history"]["close"]
+            cur, prev, is_pre = live_price(mdata)
             r = rsi(closes, 14)
             support3m = min(closes)
             resist3m = max(closes)
             support2w = min(closes[-10:]) if len(closes) >= 10 else min(closes)
             r_str = f"{r:.1f}" if r else "N/A"
             print(f"\n  ▶ {sym}  [{kind}]")
-            print(f"    当前价 ${snap:.2f}  RSI {r_str}")
+            price_line = f"    当前价 ${cur:.2f}  RSI {r_str}"
+            if is_pre:
+                price_line += f"  🌅盘前 (昨收 ${prev:.2f})"
+            print(price_line)
             print(f"    3个月支撑 ${support3m:.2f}  阻力 ${resist3m:.2f}")
             print(f"    参考入场区间  ${support2w:.2f} – ${snap:.2f}")
             print(f"    止损参考  ${support2w * 0.97:.2f}（近期支撑下方 3%）")

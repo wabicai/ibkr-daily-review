@@ -90,6 +90,12 @@
         "change_pct": 1.07,       // 涨跌幅 %
         "as_of": "2026-06-04"     // 数据日期
       },
+      "premarket": {              // 盘前 snapshot；无盘前数据时为 null
+        "price": 203.10,         // 最新盘前价（04:00–09:30 ET 最后一根分钟 bar）
+        "change_pct": 0.93,      // 相对 snapshot.price（昨收）的涨跌幅 %
+        "volume": 152340,        // 盘前累计量（部分券源常为 0，仅供参考）
+        "as_of": "2026-06-09T09:05:00-04:00"  // 盘前 bar 时间戳（带时区）
+      },
       "history": {
         "dates":  ["2026-01-06", ...],  // 升序，120 个交易日
         "open":   [...],
@@ -109,8 +115,18 @@
 - `snapshot.change_pct` ⟵ 旧 `snapshot.change_pct`
 - `history.dates` ⟵ 旧 `history.time`
 - `history.{open,high,low,close,volume}` ⟵ 同名
+- `premarket` 是**新增**字段（盘前 snapshot），旧 IBKR 格式没有；无盘前数据时为 `null`
 - ❌ 不再有 `contract_id` / `exchange`（yfinance 不需要）
 - ❌ 不再有 `account`（公开仓库不存账户/持仓）
+
+**⚠️ 盘前价的「鲜活」判定（关键规则）**：
+`premarket` 字段在两种 cron 跑出的缓存里都可能存在，但只有当它属于「尚未计入日线收盘」的那个交易日才算当前实时价。判定规则：
+
+- **`premarket.as_of` 的日期 > `snapshot.as_of`** → 这是**今日盘前价**，当作「当前价」用于趋势/信号判定，对比基准（昨收）= `snapshot.price`。报告里给该票标 🌅 盘前。
+- **`premarket.as_of` 的日期 == `snapshot.as_of`** → 盘前所属交易日已计入日线收盘，是**过期盘前**，忽略，当前价仍用 `snapshot.price`。
+- `premarket` 为 `null` → 当前价用 `snapshot.price`。
+
+（`scripts/analyze.py` 的 `live_price()` 就是这个规则，逐票输出已自动处理。）
 
 #### 0b：价格一致性自检
 
@@ -162,6 +178,9 @@ RSI(14)      = Wilder 平滑法
                否则             → 盘整→
 ```
 
+> **当前价 = 鲜活盘前价（若有）否则 snapshot.price**：趋势判定和 Step 3 信号里的「当前价」按上面的盘前鲜活判定取值——盘前时段就是今日盘前价（🌅），其余时段是当日收盘。
+> MA20/MA50/RSI/相对强弱/量能比**仍按日线计算**（盘前量是部分日量，不可与 20 日均量直接比，所以量能比不掺盘前）。
+
 输出表格（每列对齐）：
 
 ```
@@ -178,6 +197,8 @@ AAPL    $201.23  $198.50  $192.10   65.7 健康      +2.1%         上升↑   1
 ---
 
 ### Step 3 — 信号判定
+
+> 这里的「当前价」按 Step 2 的盘前鲜活判定取值：盘前时段 = 今日盘前价，「昨收」= `snapshot.price`；其余时段「当前价」= 当日收盘，「昨收」= `close[-2]`。这样**盘前就能跑出加/减仓信号**，你可以在开盘前下单。
 
 **减仓警示**（满足任一即触发）：
 - `当前价 < MA20` 且 `量能比 > 1.2` 且 `当前价 < 昨收`
@@ -236,9 +257,12 @@ AAPL    $201.23  $198.50  $192.10   65.7 健康      +2.1%         上升↑   1
 
 ## 数据更新机制
 
-- **GitHub Actions cron**：`30 21 * * 1-5` (UTC) = 美东收盘后约 1.5 小时
+两个 GitHub Actions cron 跑同一个 `build_cache.py`，缓存里始终带最新的盘前 snapshot：
+
+- **盘前 cron**：`0 13 * * 1-5` (UTC) ≈ 美东 09:00（夏令时）/ 08:00（冬令时），开盘前把**当日盘前价**写进缓存——这是「盘前就能下单」的数据来源。此时日线 `snapshot.price` 仍是昨收，`premarket` 是今日盘前（date > snapshot.as_of，鲜活）。
+- **EOD cron**：`30 21 * * 1-5` (UTC) = 美东收盘后约 1.5 小时，写当日完整收盘日线。
 - **手动触发**：`gh workflow run daily-update.yml -R wabicai/ibkr-daily-review`
-- **本地手动更新**：`python scripts/build_cache.py`（覆盖 `latest.json` 和当日 dated 文件）
+- **本地手动更新**：`python scripts/build_cache.py`（覆盖 `latest.json` 和当日 dated 文件；盘前时段本地跑就能即时拿到当日盘前价）
 
 ## 重要约定
 
@@ -246,5 +270,5 @@ AAPL    $201.23  $198.50  $192.10   65.7 健康      +2.1%         上升↑   1
   - 持仓只能在对话里临时贴 或 走本地 `positions.local.json`（gitignore）
   - 下单后 IBKR connector 的回执只在你跟用户的对话里展示，不写盘
 - **Connector 连上时直接发单**——二次确认交给 IBKR 客户端弹窗（用户那边的最后一道闸）
-- 盘中数据滞后：缓存 EOD 用于决策，下单前用 IBKR connector 拉实时 `snapshot` 校验
+- 盘前/盘中数据滞后：缓存（EOD + 盘前 cron 的盘前 snapshot）用于决策，**下单前务必用 IBKR connector 拉实时 `snapshot` 校验当前价**——yfinance 盘前是分钟级且部分券源盘前量为 0，实时下单价/股数/止损一律以 IBKR 最新 snapshot 为准
 - 字段对照表见 Step 0a，旧的 IBKR prompt 习惯也适用，只是去掉了 `contract_id` / `exchange` / `account` 这三组

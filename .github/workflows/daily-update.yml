@@ -2,8 +2,12 @@ name: Daily market cache
 
 on:
   schedule:
-    # US market closes 16:00 ET. Run 21:30 UTC year-round; trades from
-    # the previous session are always settled by then in yfinance EOD.
+    # Pre-market snapshot: 13:00 UTC ≈ 09:00 ET (EDT) / 08:00 ET (EST) — i.e.
+    # ~30min before the 09:30 open in summer, mid pre-market in winter. Captures
+    # today's pre-market price into the cache before you trade in the morning.
+    - cron: "0 13 * * 1-5"
+    # EOD: US market closes 16:00 ET. Run 21:30 UTC year-round; trades from
+    # the session are always settled by then in yfinance EOD.
     - cron: "30 21 * * 1-5"
   workflow_dispatch:
 
@@ -31,6 +35,8 @@ jobs:
         run: python scripts/build_cache.py
 
       - name: Commit cache
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -39,5 +45,10 @@ jobs:
             echo "No cache changes."
             exit 0
           fi
-          git commit -m "chore(cache): daily update $(date -u +%Y-%m-%d)"
+          if [ "$SCHEDULE" = "0 13 * * 1-5" ]; then
+            phase="pre-market"
+          else
+            phase="EOD"
+          fi
+          git commit -m "chore(cache): $phase update $(date -u +%Y-%m-%d)"
           git push
