@@ -1,0 +1,11 @@
+{
+  "max_position_pct": 30,
+  "warning_position_pct": 25,
+  "max_theme_pct": 55,
+  "min_cash_pct": 10,
+  "risk_per_trade_pct": 1,
+  "max_total_stop_risk_pct": 5,
+  "earnings_blackout_days": 5,
+  "signal_confirmation_days": 2,
+  "trade_cooldown_days": 3
+}
