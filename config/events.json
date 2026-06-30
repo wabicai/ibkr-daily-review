@@ -1,0 +1,11 @@
+{
+  "events": [],
+  "schema": {
+    "symbol": "Ticker or MARKET",
+    "event_type": "earnings|investor_day|product|macro|dividend|regulatory",
+    "date": "YYYY-MM-DD",
+    "title": "Human-readable title",
+    "source": "Optional source URL or note",
+    "risk_level": "low|medium|high"
+  }
+}
