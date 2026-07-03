@@ -5,8 +5,9 @@
   "min_cash_pct": 10,
   "risk_per_trade_pct": null,
   "risk_per_trade_mode": "ai_dynamic",
-  "max_total_stop_risk_pct": 5,
-  "earnings_blackout_days": 5,
-  "signal_confirmation_days": 2,
-  "trade_cooldown_days": 3
+  "max_total_stop_risk_pct": null,
+  "max_total_stop_risk_mode": "ai_dynamic",
+  "earnings_blackout_days": 2,
+  "signal_confirmation_days": 0,
+  "trade_cooldown_days": 0
 }
