@@ -22,9 +22,38 @@ CACHE_DIR = ROOT / "cache"
 HISTORY_DAYS = 120  # enough for MA50 + 20d relative strength + headroom
 
 
+def flatten_watchlist(data: dict) -> list[dict]:
+    """Support both legacy {symbols:[...]} and v2 {groups:{...}} watchlists."""
+    if data.get("groups"):
+        out: list[dict] = []
+        seen: set[str] = set()
+        group_order = data.get("strategy", {}).get(
+            "priority_order", ["core", "satellite", "etf", "context"]
+        )
+        for group in group_order:
+            for item in data["groups"].get(group, []):
+                symbol = item["symbol"]
+                if symbol in seen:
+                    continue
+                merged = {**item, "group": group}
+                out.append(merged)
+                seen.add(symbol)
+        for group, items in data["groups"].items():
+            if group in group_order:
+                continue
+            for item in items:
+                symbol = item["symbol"]
+                if symbol in seen:
+                    continue
+                out.append({**item, "group": group})
+                seen.add(symbol)
+        return out
+    return data.get("symbols", [])
+
+
 def load_watchlist() -> tuple[list[dict], str]:
     data = json.loads(CONFIG.read_text())
-    return data["symbols"], data["benchmark"]
+    return flatten_watchlist(data), data["benchmark"]
 
 
 def fetch_premarket(symbol: str, ref_close: float) -> dict | None:
@@ -131,8 +160,13 @@ def main() -> int:
             failures.append(sym)
             continue
         data["name"] = entry["name"]
+        data["role"] = entry.get("role", "candidate")
+        data["theme"] = entry.get("theme", "unclassified")
+        data["group"] = entry.get("group", "legacy")
+        data["priority"] = entry.get("priority")
+        data["tradable"] = entry.get("tradable", entry.get("role") != "context")
         out["market_data"][sym] = data
-        line = f"  {sym:<6} {data['snapshot']['price']:>9.2f}  ({data['snapshot']['change_pct']:+.2f}%)"
+        line = f"  {sym:<10} {data['snapshot']['price']:>9.2f}  ({data['snapshot']['change_pct']:+.2f}%)"
         pre = data.get("premarket")
         if pre:
             line += f"   盘前 {pre['price']:>9.2f} ({pre['change_pct']:+.2f}%)"
