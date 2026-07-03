@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline watchlist technical review with role-aware signal filtering."""
+"""Offline watchlist technical review with pool-aware signal filtering."""
 from __future__ import annotations
 
 import json
@@ -10,6 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CACHE_DIR = ROOT / "cache"
 WATCHLIST = ROOT / "config" / "watchlist.json"
+
+BROAD_ETFS = {"QQQ", "SPY", "IWM"}
 
 
 def ma(values: list[float], n: int) -> float | None:
@@ -94,34 +96,80 @@ def load_cache(target: str | None) -> tuple[dict, Path]:
     return json.loads(path.read_text()), path
 
 
-def load_roles() -> dict[str, str]:
+def flatten_watchlist(config: dict) -> list[dict]:
+    if config.get("groups"):
+        out: list[dict] = []
+        seen: set[str] = set()
+        order = config.get("strategy", {}).get(
+            "priority_order", ["core", "satellite", "etf", "context"]
+        )
+        for group in order:
+            for item in config["groups"].get(group, []):
+                if item["symbol"] in seen:
+                    continue
+                out.append({**item, "group": group})
+                seen.add(item["symbol"])
+        return out
+    return config.get("symbols", [])
+
+
+def load_meta() -> dict[str, dict]:
     config = json.loads(WATCHLIST.read_text())
-    return {item["symbol"]: item.get("role", "candidate") for item in config["symbols"]}
+    return {item["symbol"]: item for item in flatten_watchlist(config)}
+
+
+def is_actionable(symbol: str, meta: dict) -> bool:
+    if meta.get("role") == "context":
+        return False
+    if meta.get("tradable") is False:
+        return False
+    if symbol in {"QQQ", "SPY", "IWM", "SMH", "TLT", "GLD"}:
+        return True
+    return meta.get("role", "candidate") in {"candidate", "benchmark"}
+
+
+def score_signal(current: float, previous: float, m20: float | None, m50: float | None, rsi14: float | None, volume_ratio: float, relative: float) -> int:
+    conditions = [
+        m20 is not None and current > m20,
+        m20 is not None and m50 is not None and m20 > m50,
+        volume_ratio > 1.5 and current > previous,
+        rsi14 is not None and 50 <= rsi14 <= 70,
+        relative >= 0,
+    ]
+    return sum(conditions)
 
 
 def main() -> None:
     target = sys.argv[1] if len(sys.argv) > 1 else None
     cache, cache_path = load_cache(target)
-    roles = load_roles()
+    meta_by_symbol = load_meta()
     market = cache["market_data"]
     benchmark_symbol = cache["benchmark"]
     benchmark_closes = market[benchmark_symbol]["history"]["close"]
     as_of = market[benchmark_symbol]["snapshot"]["as_of"]
 
-    print(f"\n{'=' * 112}")
+    print(f"\n{'=' * 128}")
     print(f"每日美股 watchlist 技术分析 {as_of}（基准 {benchmark_symbol}）")
     print(f"cache: {cache_path.relative_to(ROOT)}")
-    print(f"{'=' * 112}")
+    print(f"{'=' * 128}")
     print(
-        f"{'标的':<6} {'角色':<9} {'当前价':>10} {'MA20':>10} {'MA50':>10} "
+        f"{'标的':<10} {'池':<10} {'角色':<10} {'当前价':>10} {'MA20':>10} {'MA50':>10} "
         f"{'RSI14':>11} {'强弱QQQ':>10} {'趋势':>7} {'量能':>7}  信号"
     )
 
-    signals: list[tuple[str, str, dict]] = []
+    signals: list[tuple[str, str, dict, dict]] = []
+    broad_new_entries: list[tuple[str, int]] = []
     any_premarket = False
 
-    for symbol, data in market.items():
-        role = roles.get(symbol, "candidate")
+    # Preserve configured pool order where possible; append cache-only symbols at the end.
+    ordered_symbols = [s for s in meta_by_symbol if s in market]
+    ordered_symbols.extend([s for s in market if s not in meta_by_symbol])
+
+    for symbol in ordered_symbols:
+        data = market[symbol]
+        meta = meta_by_symbol.get(symbol, data)
+        role = meta.get("role", data.get("role", "candidate"))
+        group = meta.get("group", data.get("group", "legacy"))
         closes = data["history"]["close"]
         volumes = data["history"]["volume"]
         current, previous, is_premarket = live_price(data)
@@ -133,10 +181,8 @@ def main() -> None:
         relative = rel_strength(closes, benchmark_closes)
         trend = trend_label(current, m20, m50)
 
-        if role == "context":
+        if not is_actionable(symbol, meta):
             action = "仅市场状态"
-        elif role == "benchmark":
-            action = "基准"
         else:
             sell = (
                 (m20 is not None and current < m20 and volume_ratio > 1.2 and current < previous)
@@ -144,24 +190,20 @@ def main() -> None:
             )
             if sell:
                 action = "减仓警示"
-                signals.append((symbol, action, data))
+                signals.append((symbol, action, data, meta))
             else:
-                conditions = [
-                    m20 is not None and current > m20,
-                    m20 is not None and m50 is not None and m20 > m50,
-                    volume_ratio > 1.5 and current > previous,
-                    rsi14 is not None and 50 <= rsi14 <= 70,
-                    relative >= 0,
-                ]
-                if sum(conditions) >= 3:
+                score = score_signal(current, previous, m20, m50, rsi14, volume_ratio, relative)
+                if score >= 3:
                     action = "多头共振"
-                    signals.append((symbol, "加仓候选", data))
+                    if symbol in BROAD_ETFS:
+                        broad_new_entries.append((symbol, score))
+                    signals.append((symbol, "加仓/建仓候选", data, meta))
                 else:
                     action = "观察/持有"
 
         premarket_tag = "*" if is_premarket else " "
         print(
-            f"{symbol:<6} {role:<9} {premarket_tag}${current:>8.2f} "
+            f"{symbol:<10} {group:<10} {role:<10} {premarket_tag}${current:>8.2f} "
             f"${m20 or 0:>8.2f} ${m50 or 0:>8.2f} "
             f"{rsi_label(rsi14):>11} {relative:>+9.1f}% {trend:>7} "
             f"{volume_ratio:>6.2f}x  {action}"
@@ -170,19 +212,23 @@ def main() -> None:
     if any_premarket:
         print("* 当前价为鲜活盘前价；技术指标仍使用日线数据。")
 
-    print(f"\n{'=' * 112}\n操作建议\n{'=' * 112}")
+    if len(broad_new_entries) > 1:
+        best = sorted(broad_new_entries, key=lambda x: x[1], reverse=True)[0][0]
+        print(f"\n宽基 ETF 去重：QQQ/SPY/IWM 同周期最多新建一只，优先保留 {best}，其余仅观察。")
+
+    print(f"\n{'=' * 128}\n操作建议\n{'=' * 128}")
     if not signals:
         print("今日没有候选标的触发明确信号。")
         return
 
-    for symbol, signal, data in signals:
+    for symbol, signal, data, meta in signals:
         closes = data["history"]["close"]
         current, previous, is_premarket = live_price(data)
         support_3m = min(closes)
         resistance_3m = max(closes)
         support_2w = min(closes[-10:]) if len(closes) >= 10 else support_3m
         stop = support_2w * 0.97
-        print(f"\n{symbol} [{signal}]")
+        print(f"\n{symbol} [{signal}] pool={meta.get('group', 'legacy')} theme={meta.get('theme', 'unclassified')}")
         print(f"当前价 ${current:.2f}" + (f"，盘前，昨收 ${previous:.2f}" if is_premarket else ""))
         print(f"3个月支撑 ${support_3m:.2f}，阻力 ${resistance_3m:.2f}")
         print(f"参考入场区间 ${support_2w:.2f} - ${current:.2f}")
