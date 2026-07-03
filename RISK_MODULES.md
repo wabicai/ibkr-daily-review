@@ -13,10 +13,12 @@ Checks:
 - single-position concentration
 - theme concentration
 - cash floor
-- defined stop-risk budget
+- stop-risk reasonableness
 - total portfolio stop-risk ceiling
 
 `positions.local.json` remains local and must never be committed.
+
+Per-trade risk is dynamic. `risk_per_trade_pct: null` with `risk_per_trade_mode: ai_dynamic` means there is no fixed 1% per-trade risk cap. The model should judge each proposed order from overall portfolio context, cash level, position size, stop distance, risk/reward, market regime, theme concentration, earnings/event risk, signal quality, and cooldown status. Do not reject an otherwise valid order only because its stop distance exceeds 1% of account net liquidation value.
 
 ## 2. Market regime and ETF handling
 
@@ -64,5 +66,6 @@ Event dates must be populated from reliable primary sources. Empty or stale even
 - Do not add exposure when cash is below the configured floor unless the action reduces another risk first.
 - Do not add a position above the single-position or theme limit.
 - Do not open a new position inside the configured earnings blackout window.
+- Do not use a fixed 1% per-trade risk cap; use dynamic AI risk assessment instead.
 - Every buy instruction needs a defined stop. If a bracket/OCO instruction is unavailable, show the stop explicitly and do not imply it is live.
 - Never commit account balances, positions, orders, account IDs, or broker responses.
