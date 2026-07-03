@@ -15,7 +15,25 @@
 1. **每个买单必须配套止损单**（OCO 或独立 STP），止损价按 `Step 4` 算。
 2. **下单前用 IBKR connector 拉一次实时 `snapshot` 验真当前价**——缓存是 EOD 数据，盘中天然滞后；`snapshot` 和 `cache.snapshot.price` 的偏离只说明缓存不是实时行情。实时下单价格、股数校验和止损距离都以最新 `snapshot` 为准，必要时按实时价重算风控参数。
 3. 报告里始终展示每笔单的：标的 / 方向 / 股数 / 限价 / 止损 / 理由——透明度优先，方便用户在 IBKR 弹窗里核对。
-4. **不要使用固定 1% 单笔风险上限。** `risk_per_trade_pct: null` 且 `risk_per_trade_mode: ai_dynamic` 时，由 AI 结合整体组合、仓位、现金、止损距离、风险收益比、市场状态、主题集中度、财报事件、信号质量和冷却期动态判断。不要仅因为止损风险超过账户净值 1% 就否决订单。
+4. **不要使用固定 1% 单笔风险上限。** `risk_per_trade_pct: null` 且 `risk_per_trade_mode: ai_dynamic` 时，由 AI 结合整体组合、仓位、现金、止损距离、风险收益比、市场状态、主题集中度、财报事件和信号质量动态判断。不要仅因为止损风险超过账户净值 1% 就否决订单。
+5. `signal_confirmation_days = 0` 和 `trade_cooldown_days = 0` 时，不要求机械等待确认天数或冷却期；由 AI 直接判断信号质量。
+
+## Watchlist 分层
+
+`config/watchlist.json` 使用四层结构：
+
+1. **core**：每天优先分析，AI 基础设施核心池。
+2. **satellite**：卫星池，memory/storage/optical/connectivity/power cooling 等扩展主题，有强信号时可交易。
+3. **etf**：ETF 池，既用于市场状态，也可交易。
+4. **context**：仅作为主题和市场背景，不生成订单，除非用户明确提升为 candidate。
+
+当前 Memory / Storage 规则：
+
+- MU 是核心池标的。
+- SNDK 和 SK 海力士（`000660.KS`）是卫星池，可在信号足够强、IBKR 可交易且风险收益比合理时生成订单指令。
+- 三星电子（`005930.KS`）和 Kioxia（`285A.T`）暂时只作为 context，用于判断 memory/NAND 行业状态，不直接交易。
+
+`auto_opportunity_pool` 只作为研究指令：每天可额外扫描 5–10 只美股 AI 基础设施机会，但不要自动写入仓库；连续强势且主题匹配时，在报告里建议提升到 satellite/core。
 
 ## ETF 与 context 规则
 
@@ -29,10 +47,6 @@ ENTG 继续仅作为 context，不生成交易建议或订单指令。
 
 ---
 
-## 关注清单 Watchlist
-
-来源：`config/watchlist.json`。新增/删减改这个文件并跑 `scripts/build_cache.py`，下次 Actions 也会用新列表。
-
 ## 分析参数
 
 - **趋势基准**：MA20 / MA50（日线收盘价）
@@ -45,12 +59,12 @@ ENTG 继续仅作为 context，不生成交易建议或订单指令。
 
 ### Step 0 — 数据获取
 
-1. **优先 `git -C <repo路径> pull --ff-only`** 拉一次远端最新缓存
-2. 读 `cache/latest.json`
+1. **优先 `git -C <repo路径> pull --ff-only`** 拉一次远端最新缓存。
+2. 读 `cache/latest.json`。
 3. 看 `market_data["QQQ"].snapshot.as_of`：
-   - 等于今天 → ✅ 用，报告首行注明 `📦 数据日期 YYYY-MM-DD`
-   - 是上一个交易日（今天美股没开盘 / Actions 还没跑）→ ⚠️ 报告首行说明「最新可用数据为 YYYY-MM-DD」再继续
-   - 超过 3 个交易日 → 提示用户检查 Actions 是否失败，先不出报告
+   - 等于今天 → ✅ 用，报告首行注明 `📦 数据日期 YYYY-MM-DD`。
+   - 是上一个交易日（今天美股没开盘 / Actions 还没跑）→ ⚠️ 报告首行说明「最新可用数据为 YYYY-MM-DD」再继续。
+   - 超过 3 个交易日 → 提示用户检查 Actions 是否失败，先不出报告。
 4. 连接 IBKR 获取账户净值、现金、持仓、成交记录、未成交订单和最新行情。
 
 ### Step 1 — 持仓核算
@@ -97,7 +111,7 @@ RSI(14)      = Wilder 平滑法
 - `50 ≤ RSI(14) ≤ 70`
 - `相对强弱 ≥ 0`（跑赢 QQQ）
 
-同时必须通过 `config/risk_rules.json` 中的仓位、主题集中度、现金比例、财报黑窗、信号确认和冷却期规则。单笔风险使用 AI 动态评估，不使用固定 1% 上限。
+同时必须通过 `config/risk_rules.json` 中的仓位、主题集中度、现金比例和财报黑窗规则。单笔风险和总止损风险使用 AI 动态评估，不使用固定 1% 或固定总风险上限。
 
 否则 → 观察/持有。
 
@@ -129,12 +143,13 @@ RSI(14)      = Wilder 平滑法
 2. 市场状态
 3. 当日表现归因
 4. 持仓逐票复盘
-5. 候选标的逐票复盘
-6. 风险检查
-7. 财报与事件风险
-8. 盘前计划有效性复盘
-9. 下一交易日条件单预案或已发起订单指令
-10. 最终结论：操作或不操作
+5. core / satellite / ETF 候选逐票复盘
+6. Memory / Storage 主题专项观察
+7. 风险检查
+8. 财报与事件风险
+9. 盘前计划有效性复盘
+10. 下一交易日条件单预案或已发起订单指令
+11. 最终结论：操作或不操作
 
 ## 数据更新机制
 
