@@ -1,33 +1,56 @@
 {
   "benchmark": "QQQ",
-  "symbols": [
-    {"symbol": "AAPL",  "name": "苹果", "role": "candidate", "theme": "mega_cap_tech"},
-    {"symbol": "META",  "name": "Meta", "role": "candidate", "theme": "mega_cap_tech"},
-    {"symbol": "NVDA",  "name": "英伟达", "role": "candidate", "theme": "semiconductor_ai"},
-    {"symbol": "QQQ",   "name": "纳指ETF", "role": "benchmark", "theme": "broad_market"},
-    {"symbol": "TSLA",  "name": "特斯拉", "role": "candidate", "theme": "high_beta"},
-    {"symbol": "VOO",   "name": "标普ETF", "role": "candidate", "theme": "broad_market"},
-    {"symbol": "MU",    "name": "美光", "role": "candidate", "theme": "semiconductor_ai"},
-    {"symbol": "MSFT",  "name": "微软", "role": "candidate", "theme": "mega_cap_tech"},
-    {"symbol": "AMD",   "name": "AMD", "role": "candidate", "theme": "semiconductor_ai"},
-    {"symbol": "AVGO",  "name": "博通", "role": "candidate", "theme": "semiconductor_ai"},
-    {"symbol": "PLTR",  "name": "Palantir", "role": "candidate", "theme": "high_beta"},
-    {"symbol": "GOOGL", "name": "谷歌", "role": "candidate", "theme": "mega_cap_tech"},
-    {"symbol": "AMZN",  "name": "亚马逊", "role": "candidate", "theme": "mega_cap_tech"},
-    {"symbol": "ORCL",  "name": "甲骨文", "role": "candidate", "theme": "cloud_infrastructure"},
-    {"symbol": "MRVL",  "name": "迈威尔", "role": "candidate", "theme": "semiconductor_ai"},
-    {"symbol": "COHR",  "name": "Coherent", "role": "candidate", "theme": "optical_datacenter"},
-    {"symbol": "GLW",   "name": "康宁", "role": "candidate", "theme": "optical_datacenter"},
-    {"symbol": "ADBE",  "name": "Adobe", "role": "candidate", "theme": "software"},
-    {"symbol": "LRCX",  "name": "泛林集团", "role": "candidate", "theme": "semiconductor_equipment"},
-    {"symbol": "AMAT",  "name": "应用材料", "role": "candidate", "theme": "semiconductor_equipment"},
-    {"symbol": "KLAC",  "name": "科磊", "role": "candidate", "theme": "semiconductor_equipment"},
-    {"symbol": "AMKR",  "name": "安靠科技", "role": "candidate", "theme": "advanced_packaging"},
-    {"symbol": "ENTG",  "name": "英特格", "role": "context", "theme": "semiconductor_materials"},
-    {"symbol": "SPY",   "name": "标普500市场状态", "role": "context", "theme": "market_regime"},
-    {"symbol": "IWM",   "name": "罗素2000风险偏好", "role": "context", "theme": "market_regime"},
-    {"symbol": "SMH",   "name": "半导体行业状态", "role": "context", "theme": "market_regime"},
-    {"symbol": "TLT",   "name": "美国长期国债", "role": "context", "theme": "market_regime"},
-    {"symbol": "GLD",   "name": "黄金避险", "role": "context", "theme": "market_regime"}
-  ]
+  "schema_version": 2,
+  "strategy": {
+    "name": "AI infrastructure core + satellite watchlist",
+    "priority_order": ["core", "satellite", "etf", "context"],
+    "auto_opportunity_pool": {
+      "enabled": true,
+      "description": "Daily review may surface 5-10 additional US-listed AI infrastructure opportunities from news/market context. Candidates require strong theme fit, liquidity, technical confirmation, and risk/reward before promotion to satellite or core. Do not commit auto-discovered symbols to this file without user approval."
+    }
+  },
+  "groups": {
+    "core": [
+      {"symbol": "NVDA",  "name": "英伟达", "role": "candidate", "theme": "gpu_ai_accelerator", "priority": 1},
+      {"symbol": "AMD",   "name": "AMD", "role": "candidate", "theme": "gpu_ai_accelerator", "priority": 1},
+      {"symbol": "MU",    "name": "美光", "role": "candidate", "theme": "memory_hbm_dram", "priority": 1},
+      {"symbol": "AVGO",  "name": "博通", "role": "candidate", "theme": "ai_networking_asic", "priority": 1},
+      {"symbol": "MRVL",  "name": "迈威尔", "role": "candidate", "theme": "ai_networking_asic", "priority": 1},
+      {"symbol": "LRCX",  "name": "泛林集团", "role": "candidate", "theme": "semiconductor_equipment", "priority": 1},
+      {"symbol": "AMAT",  "name": "应用材料", "role": "candidate", "theme": "semiconductor_equipment", "priority": 1},
+      {"symbol": "KLAC",  "name": "科磊", "role": "candidate", "theme": "semiconductor_equipment", "priority": 1},
+      {"symbol": "TSM",   "name": "台积电", "role": "candidate", "theme": "foundry_advanced_node", "priority": 1},
+      {"symbol": "MSFT",  "name": "微软", "role": "candidate", "theme": "ai_cloud_platform", "priority": 1},
+      {"symbol": "META",  "name": "Meta", "role": "candidate", "theme": "ai_hyperscaler", "priority": 1},
+      {"symbol": "GOOGL", "name": "谷歌", "role": "candidate", "theme": "ai_hyperscaler", "priority": 1},
+      {"symbol": "ORCL",  "name": "甲骨文", "role": "candidate", "theme": "ai_cloud_platform", "priority": 1},
+      {"symbol": "PLTR",  "name": "Palantir", "role": "candidate", "theme": "ai_software", "priority": 1},
+      {"symbol": "QQQ",   "name": "纳指100 ETF", "role": "benchmark", "theme": "broad_market", "priority": 1, "tradable": true}
+    ],
+    "satellite": [
+      {"symbol": "SNDK",      "name": "Sandisk", "role": "candidate", "theme": "memory_nand_storage", "priority": 2},
+      {"symbol": "000660.KS", "name": "SK海力士", "role": "candidate", "theme": "memory_hbm_dram", "priority": 2, "notes": "Korea-listed; verify IBKR trading availability before instruction."},
+      {"symbol": "COHR",      "name": "Coherent", "role": "candidate", "theme": "optical_datacenter", "priority": 2},
+      {"symbol": "GLW",       "name": "康宁", "role": "candidate", "theme": "optical_datacenter", "priority": 2},
+      {"symbol": "AMKR",      "name": "安靠科技", "role": "candidate", "theme": "advanced_packaging", "priority": 2},
+      {"symbol": "ALAB",      "name": "Astera Labs", "role": "candidate", "theme": "ai_connectivity", "priority": 2},
+      {"symbol": "CRDO",      "name": "Credo Technology", "role": "candidate", "theme": "ai_connectivity", "priority": 2},
+      {"symbol": "ARM",       "name": "Arm", "role": "candidate", "theme": "ai_compute_ip", "priority": 2},
+      {"symbol": "PSTG",      "name": "Pure Storage", "role": "candidate", "theme": "ai_storage", "priority": 2},
+      {"symbol": "VRT",       "name": "Vertiv", "role": "candidate", "theme": "datacenter_power_cooling", "priority": 2}
+    ],
+    "etf": [
+      {"symbol": "SPY", "name": "标普500 ETF", "role": "candidate", "theme": "broad_market", "priority": 3, "tradable": true},
+      {"symbol": "IWM", "name": "罗素2000 ETF", "role": "candidate", "theme": "broad_market", "priority": 3, "tradable": true},
+      {"symbol": "SMH", "name": "半导体ETF", "role": "candidate", "theme": "semiconductor_etf", "priority": 3, "tradable": true},
+      {"symbol": "TLT", "name": "美国长期国债ETF", "role": "candidate", "theme": "defensive_rates", "priority": 3, "tradable": true},
+      {"symbol": "GLD", "name": "黄金ETF", "role": "candidate", "theme": "defensive_gold", "priority": 3, "tradable": true}
+    ],
+    "context": [
+      {"symbol": "ENTG",      "name": "英特格", "role": "context", "theme": "semiconductor_materials", "priority": 4, "tradable": false},
+      {"symbol": "005930.KS", "name": "三星电子", "role": "context", "theme": "memory_hbm_dram", "priority": 4, "tradable": false},
+      {"symbol": "285A.T",    "name": "Kioxia Holdings", "role": "context", "theme": "memory_nand_storage", "priority": 4, "tradable": false, "notes": "Japan listing / availability may vary; context until verified."}
+    ]
+  },
+  "symbols": []
 }
