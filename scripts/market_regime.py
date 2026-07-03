@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Classify broad market conditions from context-only ETFs in cache/latest.json."""
+"""Classify broad market conditions from ETF/context instruments in cache/latest.json."""
 from __future__ import annotations
 
 import json
@@ -8,6 +8,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / "cache" / "latest.json"
 WATCHLIST = ROOT / "config" / "watchlist.json"
+
+REGIME_SYMBOLS = {"QQQ", "SPY", "IWM", "SMH", "TLT", "GLD"}
 
 
 def ma(values: list[float], n: int) -> float | None:
@@ -20,11 +22,29 @@ def pct_change(values: list[float], n: int) -> float:
     return (values[-1] / values[-n - 1] - 1) * 100
 
 
+def flatten_watchlist(config: dict) -> list[dict]:
+    if config.get("groups"):
+        out: list[dict] = []
+        seen: set[str] = set()
+        order = config.get("strategy", {}).get(
+            "priority_order", ["core", "satellite", "etf", "context"]
+        )
+        for group in order:
+            for item in config["groups"].get(group, []):
+                if item["symbol"] in seen:
+                    continue
+                out.append({**item, "group": group})
+                seen.add(item["symbol"])
+        return out
+    return config.get("symbols", [])
+
+
 def main() -> None:
     cache = json.loads(CACHE.read_text())
     config = json.loads(WATCHLIST.read_text())
     market = cache["market_data"]
-    context = [x for x in config["symbols"] if x.get("role") == "context"]
+    items = flatten_watchlist(config)
+    context = [x for x in items if x["symbol"] in REGIME_SYMBOLS or x.get("role") == "context"]
 
     scores: dict[str, int] = {}
     print("\nMARKET REGIME")
@@ -33,7 +53,7 @@ def main() -> None:
         symbol = item["symbol"]
         data = market.get(symbol)
         if not data:
-            print(f"{symbol:<5} missing")
+            print(f"{symbol:<10} missing")
             continue
         closes = data["history"]["close"]
         price = closes[-1]
@@ -50,24 +70,24 @@ def main() -> None:
         scores[symbol] = score
         trend = "strong" if score == 3 else "mixed" if score in (1, 2) else "weak"
         print(
-            f"{symbol:<5} price=${price:>8.2f}  MA20=${m20 or 0:>8.2f}  "
+            f"{symbol:<10} price=${price:>8.2f}  MA20=${m20 or 0:>8.2f}  "
             f"MA50=${m50 or 0:>8.2f}  20d={ret20:+6.2f}%  {trend}"
         )
 
-    risk_assets = [scores.get("SPY", 0), scores.get("IWM", 0)]
+    risk_assets = [scores.get("QQQ", 0), scores.get("SPY", 0), scores.get("IWM", 0), scores.get("SMH", 0)]
     defensive = [scores.get("TLT", 0), scores.get("GLD", 0)]
     risk_score = sum(risk_assets)
     defensive_score = sum(defensive)
 
-    if risk_score >= 5 and risk_score >= defensive_score:
+    if risk_score >= 9 and risk_score >= defensive_score:
         regime = "RISK-ON"
-    elif risk_score <= 2 and defensive_score >= 4:
+    elif risk_score <= 4 and defensive_score >= 4:
         regime = "RISK-OFF"
     else:
         regime = "NEUTRAL"
 
     print(f"\nRegime: {regime}")
-    print("Context symbols are diagnostic only and must never create trade orders.")
+    print("QQQ/SPY/IWM/SMH/TLT/GLD are regime inputs and may still be actionable ETFs; ENTG/Samsung/Kioxia remain context-only unless explicitly promoted.")
 
 
 if __name__ == "__main__":
