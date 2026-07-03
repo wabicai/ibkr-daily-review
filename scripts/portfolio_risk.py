@@ -33,6 +33,23 @@ def load_json(path: Path) -> dict:
     return json.loads(path.read_text())
 
 
+def flatten_watchlist(config: dict) -> list[dict]:
+    if config.get("groups"):
+        out: list[dict] = []
+        seen: set[str] = set()
+        order = config.get("strategy", {}).get(
+            "priority_order", ["core", "satellite", "etf", "context"]
+        )
+        for group in order:
+            for item in config["groups"].get(group, []):
+                if item["symbol"] in seen:
+                    continue
+                out.append({**item, "group": group})
+                seen.add(item["symbol"])
+        return out
+    return config.get("symbols", [])
+
+
 def main() -> int:
     try:
         portfolio = load_json(POSITIONS)
@@ -49,7 +66,7 @@ def main() -> int:
         print("[ERROR] net_liquidation must be > 0", file=sys.stderr)
         return 2
 
-    meta = {x["symbol"]: x for x in watchlist["symbols"]}
+    meta = {x["symbol"]: x for x in flatten_watchlist(watchlist)}
     market = cache["market_data"]
     theme_values: dict[str, float] = defaultdict(float)
     total_stop_risk = 0.0
@@ -62,6 +79,11 @@ def main() -> int:
     if cash / net_liq * 100 < rules["min_cash_pct"]:
         print(f"WARN cash below minimum {rules['min_cash_pct']}%")
 
+    if rules.get("risk_per_trade_pct") is None:
+        print("Per-trade risk: AI dynamic mode (no fixed 1% cap)")
+    else:
+        print(f"Per-trade risk cap: {rules['risk_per_trade_pct']}%")
+
     print("\nPositions")
     for pos in portfolio.get("positions", []):
         symbol = pos["symbol"]
@@ -71,7 +93,7 @@ def main() -> int:
         price = float(market[symbol]["snapshot"]["price"])
         value = price * float(pos["shares"])
         weight = value / net_liq * 100
-        theme = meta.get(symbol, {}).get("theme", "unclassified")
+        theme = meta.get(symbol, {}).get("theme", market[symbol].get("theme", "unclassified"))
         theme_values[theme] += value
 
         flags: list[str] = []
@@ -88,20 +110,23 @@ def main() -> int:
             stop_text = f"stop ${float(stop):.2f}, risk ${risk:.2f}"
 
         print(
-            f"{symbol:<6} ${value:>10,.2f}  {weight:>5.1f}%  "
-            f"theme={theme:<22} {stop_text:<24} {' '.join(flags)}"
+            f"{symbol:<10} ${value:>10,.2f}  {weight:>5.1f}%  "
+            f"theme={theme:<26} {stop_text:<24} {' '.join(flags)}"
         )
 
     print("\nTheme concentration")
     for theme, value in sorted(theme_values.items(), key=lambda item: item[1], reverse=True):
         weight = value / net_liq * 100
         flag = " OVER_LIMIT" if weight > rules["max_theme_pct"] else ""
-        print(f"{theme:<24} ${value:>10,.2f}  {weight:>5.1f}%{flag}")
+        print(f"{theme:<28} ${value:>10,.2f}  {weight:>5.1f}%{flag}")
 
     total_stop_pct = total_stop_risk / net_liq * 100
     print(f"\nTotal defined stop risk: ${total_stop_risk:,.2f} ({total_stop_pct:.2f}%)")
-    if total_stop_pct > rules["max_total_stop_risk_pct"]:
-        print(f"WARN total stop risk exceeds {rules['max_total_stop_risk_pct']}%")
+    max_total = rules.get("max_total_stop_risk_pct")
+    if max_total is None:
+        print("Total stop risk cap: AI dynamic mode")
+    elif total_stop_pct > max_total:
+        print(f"WARN total stop risk exceeds {max_total}%")
     return 0
 
 
