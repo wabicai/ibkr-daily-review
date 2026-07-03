@@ -22,13 +22,13 @@ Checks:
 
 `python scripts/market_regime.py`
 
-QQQ, SPY, IWM, SMH, TLT, and GLD may be used both as market context and as reviewable ETF candidates. Their benchmark or context role must not automatically exclude them from the daily decision table.
+QQQ, SPY, IWM, SMH, TLT, and GLD may be used both as market context and as actionable ETF candidates. Their benchmark or context role must not automatically exclude them from the daily decision table or order-instruction generation.
 
-ENTG remains context-only and must not receive an action plan.
+ENTG remains context-only and must not receive trade instructions.
 
 ETF grouping rules:
 
-- QQQ, SPY, and IWM are broad-market ETFs. At most one of these may receive a new-entry plan in the same review cycle.
+- QQQ, SPY, and IWM are broad-market ETFs. At most one of these may receive a new-entry instruction in the same review cycle.
 - SMH is a sector ETF and is counted separately from broad-market ETFs.
 - TLT and GLD are defensive assets and are counted separately from broad-market and sector ETFs.
 
@@ -53,16 +53,16 @@ Event dates must be populated from reliable primary sources. Empty or stale even
 3. Run portfolio-risk checks.
 4. Run market-regime classification.
 5. Run event-risk checks.
-6. Run technical analysis for candidates and reviewable ETFs.
+6. Run technical analysis for candidates and actionable ETFs.
 7. Add current fundamentals and reliable news.
-8. Produce a user-reviewable action plan only. Do not submit orders autonomously.
+8. If IBKR connector is connected and all risk gates pass, create IBKR order instructions for user-side confirmation. Do not assume an instruction is live until IBKR confirms it and the user approves the client-side prompt.
 
 ## Hard rules
 
-- Context-only symbols never receive action plans.
+- Context-only symbols never create trade instructions.
 - QQQ, SPY, IWM, SMH, TLT, and GLD are not excluded merely because they are benchmark or context inputs.
 - Do not add exposure when cash is below the configured floor unless the action reduces another risk first.
 - Do not add a position above the single-position or theme limit.
 - Do not open a new position inside the configured earnings blackout window.
-- Every buy plan needs a defined stop. If a bracket/OCO instruction is unavailable, show the stop explicitly and do not imply it is live.
+- Every buy instruction needs a defined stop. If a bracket/OCO instruction is unavailable, show the stop explicitly and do not imply it is live.
 - Never commit account balances, positions, orders, account IDs, or broker responses.
