@@ -9,5 +9,8 @@
   "max_total_stop_risk_mode": "ai_dynamic",
   "earnings_blackout_days": 2,
   "signal_confirmation_days": 0,
-  "trade_cooldown_days": 0
+  "trade_cooldown_days": 0,
+  "current_price_source": "broker_snapshot",
+  "cached_premarket_usage": "fallback_only",
+  "require_current_quote": true
 }
