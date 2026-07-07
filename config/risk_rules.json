@@ -12,5 +12,14 @@
   "trade_cooldown_days": 0,
   "current_price_source": "broker_snapshot",
   "cached_premarket_usage": "fallback_only",
-  "require_current_quote": true
+  "require_current_quote": true,
+  "protective_stop_required_for_positions": true,
+  "protective_stop_mode": "ai_dynamic",
+  "protective_stop_review_frequency": "daily",
+  "protective_stop_connector_fallback": "manual_when_stop_order_unavailable",
+  "protective_stop_defaults": {
+    "hard_break_pct_below_recent_low": 3,
+    "use_round_number_buffer": true,
+    "avoid_after_hours_forced_exit": true
+  }
 }
