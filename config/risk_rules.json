@@ -3,6 +3,8 @@
   "warning_position_pct": 25,
   "max_theme_pct": 55,
   "min_cash_pct": 10,
+  "preferred_cash_pct_after_new_trades": 35,
+  "min_cash_pct_after_new_trades": 30,
   "risk_per_trade_pct": null,
   "risk_per_trade_mode": "ai_dynamic",
   "max_total_stop_risk_pct": null,
@@ -12,5 +14,30 @@
   "trade_cooldown_days": 0,
   "current_price_source": "broker_snapshot",
   "cached_premarket_usage": "fallback_only",
-  "require_current_quote": true
+  "require_current_quote": true,
+  "execution_style": "limit_only",
+  "allow_market_order": false,
+  "requires_defined_stop": true,
+  "requires_rr_minimum": 2.2,
+  "requires_market_score_minimum": 75,
+  "requires_confidence_minimum": 85,
+  "max_daily_new_positions": 2,
+  "preferred_daily_new_positions": 1,
+  "context_trade_policy": {
+    "ENTG": "context_only",
+    "005930.KS": "context_only",
+    "285A.T": "context_only"
+  },
+  "etf_grouping": {
+    "broad_market": ["QQQ", "SPY", "IWM"],
+    "max_new_broad_market_etfs": 1,
+    "sector_etfs": ["SMH"],
+    "defensive_etfs": ["TLT", "GLD"]
+  },
+  "v4_gates": {
+    "enabled": true,
+    "investment_committee_required": true,
+    "no_trade_report_required": true,
+    "only_best_candidates": true
+  }
 }
