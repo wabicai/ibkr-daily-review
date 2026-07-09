@@ -13,6 +13,7 @@ Checks:
 - single-position concentration
 - theme concentration
 - cash floor
+- protective-stop coverage for existing positions
 - stop-risk reasonableness
 - total portfolio stop-risk context
 
@@ -21,6 +22,8 @@ Checks:
 Per-trade risk is dynamic. `risk_per_trade_pct: null` with `risk_per_trade_mode: ai_dynamic` means there is no fixed 1% per-trade risk cap. The model should judge each proposed order from overall portfolio context, cash level, position size, stop distance, risk/reward, market regime, theme concentration, earnings/event risk, signal quality, and current exposure. Do not reject an otherwise valid order only because its stop distance exceeds 1% of account net liquidation value.
 
 Total stop risk is also dynamic when `max_total_stop_risk_pct: null`. Still report total defined stop risk, but do not mechanically block orders from a fixed total-stop percentage.
+
+Existing positions should be reviewed for protective stops daily when `protective_stop_required_for_positions: true`. If a position has no protective stop, the review must surface a protective-stop plan with symbol, side, quantity, stop level, reason, and whether the connected broker tool can create that stop type. If the connector only supports market/limit instructions and cannot create a true stop order, do not substitute a sell limit below the market; mark it as manual broker-client action instead.
 
 ## 2. Watchlist pools
 
@@ -72,7 +75,7 @@ Event dates must be populated from reliable primary sources. Empty or stale even
 1. Validate cache freshness.
 2. Read live IBKR balances, positions, orders, and snapshots when available.
 3. Review core pool first, satellite pool second, ETFs third, and context symbols only for market/theme information.
-4. Run portfolio-risk checks.
+4. Run portfolio-risk checks, including protective-stop coverage for existing positions.
 5. Run market-regime classification.
 6. Run event-risk checks.
 7. Run technical analysis for candidates and actionable ETFs.
@@ -89,4 +92,5 @@ Event dates must be populated from reliable primary sources. Empty or stale even
 - Do not use a fixed 1% per-trade risk cap; use dynamic AI risk assessment instead.
 - Do not require fixed signal-confirmation days or cooldown days when the config sets them to 0; let AI judge signal quality directly.
 - Every buy instruction needs a defined stop. If a bracket/OCO instruction is unavailable, show the stop explicitly and do not imply it is live.
+- Existing positions without protective stops must be flagged daily. If a true stop instruction cannot be created by the connector, output a manual stop order plan instead.
 - Never commit account balances, positions, orders, account IDs, or broker responses.
