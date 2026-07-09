@@ -1,0 +1,47 @@
+{
+  "version": "4.0",
+  "market_score": {
+    "total": 100,
+    "components": {
+      "qqq_trend": 20,
+      "smh_trend": 20,
+      "breadth_and_risk_appetite": 20,
+      "macro_and_rates": 20,
+      "news_and_event_risk": 20
+    },
+    "regime_thresholds": {
+      "strong_risk_on": 85,
+      "risk_on": 75,
+      "neutral": 60,
+      "risk_off": 0
+    }
+  },
+  "candidate_score": {
+    "total": 100,
+    "components": {
+      "trend": 30,
+      "relative_strength": 20,
+      "theme_strength": 15,
+      "news_quality": 15,
+      "risk_reward_and_execution": 20
+    },
+    "rating_thresholds": {
+      "five_star": 85,
+      "four_star": 75,
+      "three_star": 60,
+      "watch_only": 0
+    }
+  },
+  "ai_investment_committee": {
+    "enabled": true,
+    "approval_threshold": 85,
+    "members": {
+      "trend": {"weight": 20, "description": "趋势是否健康，是否在 MA20/MA50 上方或重新转强。"},
+      "relative_strength": {"weight": 20, "description": "是否跑赢 QQQ、SMH 或所属主题 ETF。"},
+      "news": {"weight": 20, "description": "隔夜新闻、财报、监管和事件风险是否支持交易。"},
+      "macro": {"weight": 20, "description": "利率、美元、油价、地缘和市场风险偏好是否允许加风险。"},
+      "risk": {"weight": 20, "description": "仓位、主题集中度、现金、止损距离和 RR 是否通过。"}
+    },
+    "voting_rule": "总分 >= 85 且 risk 委员不得否决，才允许生成 order instruction。"
+  }
+}
