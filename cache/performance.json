@@ -1,0 +1,16 @@
+{
+  "version": "4.0",
+  "last_updated": null,
+  "summary": {
+    "trade_count": 0,
+    "win_rate": null,
+    "profit_factor": null,
+    "avg_rr_planned": null,
+    "avg_rr_realized": null,
+    "max_drawdown_pct": null,
+    "alpha_vs_qqq_pct": null,
+    "alpha_vs_smh_pct": null
+  },
+  "recent_decisions": [],
+  "notes": "This file stores strategy-level statistics only. Do not store account IDs, balances, positions, broker order IDs, fills, or private account data in this public repository."
+}
