@@ -45,6 +45,7 @@
       {"symbol": "SPY", "name": "标普500 ETF", "role": "candidate", "theme": "broad_market", "priority": 3, "tier": 2, "tradable": true, "preferred": false, "candidate": true},
       {"symbol": "IWM", "name": "罗素2000 ETF", "role": "candidate", "theme": "broad_market", "priority": 3, "tier": 3, "tradable": true, "preferred": false, "candidate": true},
       {"symbol": "SMH", "name": "半导体ETF", "role": "candidate", "theme": "semiconductor_etf", "priority": 3, "tier": 1, "tradable": true, "preferred": true, "candidate": true},
+      {"symbol": "DRAM", "name": "Roundhill Memory ETF", "role": "candidate", "theme": "memory_etf", "priority": 3, "tier": 1, "tradable": true, "preferred": true, "candidate": true, "notes": "US-listed memory ETF on BATS; use as the primary ETF proxy for DRAM/HBM/NAND theme when IBKR quote is available."},
       {"symbol": "TLT", "name": "美国长期国债ETF", "role": "candidate", "theme": "defensive_rates", "priority": 3, "tier": 3, "tradable": true, "preferred": false, "candidate": true},
       {"symbol": "GLD", "name": "黄金ETF", "role": "candidate", "theme": "defensive_gold", "priority": 3, "tier": 3, "tradable": true, "preferred": false, "candidate": true}
     ],
