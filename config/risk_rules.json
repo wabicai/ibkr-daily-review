@@ -19,10 +19,14 @@
   "allow_market_order": false,
   "requires_defined_stop": true,
   "requires_rr_minimum": 2.2,
-  "requires_market_score_minimum": 75,
   "requires_confidence_minimum": 85,
   "max_daily_new_positions": 2,
   "preferred_daily_new_positions": 1,
+  "market_score_policy": {
+    "mode": "advisory_only",
+    "hard_gate": false,
+    "description": "Market Score is market context and a position-sizing input. It must not automatically veto an otherwise approved trade."
+  },
   "context_trade_policy": {
     "ENTG": "context_only",
     "005930.KS": "context_only",
@@ -31,13 +35,14 @@
   "etf_grouping": {
     "broad_market": ["QQQ", "SPY", "IWM"],
     "max_new_broad_market_etfs": 1,
-    "sector_etfs": ["SMH"],
+    "sector_etfs": ["SMH", "DRAM"],
     "defensive_etfs": ["TLT", "GLD"]
   },
   "v4_gates": {
     "enabled": true,
     "investment_committee_required": true,
     "no_trade_report_required": true,
-    "only_best_candidates": true
+    "only_best_candidates": true,
+    "market_score_gate_enabled": false
   }
 }
