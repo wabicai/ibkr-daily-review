@@ -1,12 +1,11 @@
 {
-  "version": "4.0",
+  "version": "4.1",
   "name": "Professional dashboard trading workflow",
   "objective": "每天只筛选 1-2 笔最高质量机会；宁可错过，不为交易而交易。",
   "max_daily_new_positions": 2,
   "preferred_new_positions": 1,
   "only_best_candidates": true,
   "max_ranked_candidates": 8,
-  "minimum_market_score": 75,
   "minimum_confidence": 85,
   "minimum_rr": 2.2,
   "allow_partial_position": true,
@@ -14,11 +13,19 @@
   "avoid_market_orders": true,
   "preferred_cash_ratio": 0.35,
   "minimum_cash_after_new_trades_pct": 30,
+  "market_score_policy": {
+    "mode": "advisory_only",
+    "hard_gate": false,
+    "description": "Market Score remains visible and informs sizing and selectivity, but it is not a mandatory trade-entry threshold."
+  },
   "new_position_sizing": {
-    "market_score_90_plus": {"position_pct": 25, "description": "高质量风险开启，允许正常仓位"},
-    "market_score_80_to_89": {"position_pct": 18, "description": "正常建仓"},
-    "market_score_75_to_79": {"position_pct": 10, "description": "轻仓试单"},
-    "below_75": {"position_pct": 0, "description": "不新建仓位"}
+    "mode": "ai_dynamic_with_market_context",
+    "strong_risk_on_reference_pct": 25,
+    "risk_on_reference_pct": 18,
+    "neutral_reference_pct": 10,
+    "risk_off_reference_pct": 5,
+    "extreme_risk_off_reference_pct": 0,
+    "description": "Reference sizes only. Final size must pass AI Committee, cash, concentration, stop, RR, event and execution checks."
   },
   "order_instruction_policy": {
     "enabled": true,
@@ -26,11 +33,12 @@
     "requires_defined_stop": true,
     "requires_rr_above_minimum": true,
     "requires_investment_committee_approval": true,
+    "requires_market_score_threshold": false,
     "note": "IBKR instruction 不是 live order；最终提交必须由用户在 IBKR 客户端确认。"
   },
   "no_trade_report": {
     "enabled": true,
     "required_when_no_order": true,
-    "include_reasons": ["market_score_below_threshold", "rr_insufficient", "stop_too_wide", "event_risk", "gap_too_extended", "cash_or_concentration_limit"]
+    "include_reasons": ["rr_insufficient", "stop_too_wide", "event_risk", "gap_too_extended", "cash_or_concentration_limit", "committee_rejected", "quote_unavailable"]
   }
 }
