@@ -18,14 +18,24 @@
   "execution_style": "limit_only",
   "allow_market_order": false,
   "requires_defined_stop": true,
-  "requires_rr_minimum": 2.2,
-  "requires_confidence_minimum": 85,
+  "rr_policy": {
+    "mode": "advisory_only",
+    "hard_gate": false,
+    "reference_rr": 2.2,
+    "description": "RR must be displayed and assessed, but no fixed RR automatically blocks an order instruction. AI decides whether the limit entry, stop and expected upside are acceptable."
+  },
+  "committee_policy": {
+    "mode": "advisory_only",
+    "hard_gate": false,
+    "reference_score": 85,
+    "description": "Committee scoring remains visible for decision quality, but no fixed score automatically blocks an order instruction."
+  },
   "max_daily_new_positions": 2,
   "preferred_daily_new_positions": 1,
   "market_score_policy": {
     "mode": "advisory_only",
     "hard_gate": false,
-    "description": "Market Score is market context and a position-sizing input. It must not automatically veto an otherwise approved trade."
+    "description": "Market Score is market context and a position-sizing input. It must not automatically veto an otherwise suitable limit order."
   },
   "context_trade_policy": {
     "ENTG": "context_only",
@@ -40,9 +50,10 @@
   },
   "v4_gates": {
     "enabled": true,
-    "investment_committee_required": true,
     "no_trade_report_required": true,
     "only_best_candidates": true,
-    "market_score_gate_enabled": false
+    "market_score_gate_enabled": false,
+    "rr_gate_enabled": false,
+    "committee_score_gate_enabled": false
   }
 }
