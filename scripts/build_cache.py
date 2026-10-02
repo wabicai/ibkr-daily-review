@@ -9,9 +9,13 @@ against whatever this writes.
 
 from __future__ import annotations
 
+import argparse
 import json
+import math
 import sys
+import time
 from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 import yfinance as yf
@@ -20,6 +24,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config" / "watchlist.json"
 CACHE_DIR = ROOT / "cache"
 HISTORY_DAYS = 120  # enough for MA50 + 20d relative strength + headroom
+REQUIRED_OHLCV = ["Open", "High", "Low", "Close", "Volume"]
+US_TZ = ZoneInfo("America/New_York")
 
 
 def flatten_watchlist(data: dict) -> list[dict]:
@@ -91,12 +97,31 @@ def fetch_premarket(symbol: str, ref_close: float) -> dict | None:
     }
 
 
+def _finite(value: object) -> bool:
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False
+
+
+def _complete_history(hist):
+    """Remove partial/non-finite daily bars before they enter the cache."""
+    if any(col not in hist.columns for col in REQUIRED_OHLCV):
+        return hist.iloc[0:0]
+    clean = hist.dropna(subset=REQUIRED_OHLCV).copy()
+    finite_mask = clean[REQUIRED_OHLCV].apply(
+        lambda col: col.map(_finite)
+    ).all(axis=1)
+    return clean.loc[finite_mask]
+
+
 def fetch_symbol(symbol: str) -> dict | None:
     """Return {snapshot, history, premarket} for one ticker, or None if the
     daily data is unusable. ``premarket`` may be None when no pre-market bar
     is available — that never invalidates the symbol."""
     ticker = yf.Ticker(symbol)
     hist = ticker.history(period=f"{HISTORY_DAYS}d", auto_adjust=False)
+    hist = _complete_history(hist)
     if hist.empty:
         return None
 
@@ -136,7 +161,33 @@ def fetch_symbol(symbol: str) -> dict | None:
     }
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--phase", choices=("premarket", "eod", "manual"), default="manual")
+    parser.add_argument("--retries", type=int, default=3)
+    parser.add_argument("--retry-delay", type=int, default=90)
+    return parser.parse_args()
+
+
+def _fetch_with_retry(symbol: str, retries: int, delay: int) -> dict | None:
+    last_exc: Exception | None = None
+    for attempt in range(1, max(retries, 1) + 1):
+        try:
+            data = fetch_symbol(symbol)
+            if data is not None:
+                return data
+        except Exception as exc:
+            last_exc = exc
+        if attempt < retries:
+            print(f"[WARN] {symbol}: incomplete fetch, retry {attempt}/{retries}", file=sys.stderr)
+            time.sleep(max(delay, 0))
+    if last_exc:
+        raise last_exc
+    return None
+
+
 def main() -> int:
+    args = parse_args()
     symbols, benchmark = load_watchlist()
     out: dict = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -150,7 +201,7 @@ def main() -> int:
     for entry in symbols:
         sym = entry["symbol"]
         try:
-            data = fetch_symbol(sym)
+            data = _fetch_with_retry(sym, args.retries, args.retry_delay)
         except Exception as exc:  # network/yfinance hiccups
             print(f"[WARN] {sym}: fetch failed ({exc})", file=sys.stderr)
             failures.append(sym)
@@ -176,13 +227,39 @@ def main() -> int:
         print(f"[ERROR] benchmark {benchmark} missing — relative strength unavailable", file=sys.stderr)
         return 2
 
+    benchmark_date = out["market_data"][benchmark]["snapshot"]["as_of"]
+    latest_dates = {sym: data["snapshot"]["as_of"] for sym, data in out["market_data"].items()}
+    stale_symbols = sorted(sym for sym, d in latest_dates.items() if d < benchmark_date)
+    incomplete_symbols = sorted(set(failures))
+    status = "ok" if not incomplete_symbols and not stale_symbols else "degraded"
+
+    expected_us_date = datetime.now(US_TZ).date().isoformat()
+    if args.phase == "eod" and benchmark_date != expected_us_date:
+        print(
+            f"[ERROR] EOD benchmark stale: {benchmark} latest={benchmark_date}, "
+            f"expected={expected_us_date}; refusing to publish cache",
+            file=sys.stderr,
+        )
+        return 3
+
+    out["data_quality"] = {
+        "status": status,
+        "phase": args.phase,
+        "benchmark_latest_complete_bar": benchmark_date,
+        "expected_us_market_date": expected_us_date if args.phase == "eod" else None,
+        "incomplete_symbols": incomplete_symbols,
+        "stale_symbols": stale_symbols,
+        "strict_json": True,
+    }
+
     today = date.today().strftime("%Y-%m-%d")
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache_path = CACHE_DIR / f"{today}_market.json"
-    cache_path.write_text(json.dumps(out, indent=2, ensure_ascii=False))
+    serialized = json.dumps(out, indent=2, ensure_ascii=False, allow_nan=False)
+    cache_path.write_text(serialized)
 
     latest = CACHE_DIR / "latest.json"
-    latest.write_text(json.dumps(out, indent=2, ensure_ascii=False))
+    latest.write_text(serialized)
 
     print(f"\nWrote {cache_path.relative_to(ROOT)}  ({len(out['market_data'])} symbols)")
     if failures:
