@@ -33,7 +33,30 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Build cache
-        run: python scripts/build_cache.py
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          if [ "$SCHEDULE" = "30 12 * * 1-5" ]; then
+            phase="premarket"
+          elif [ "$SCHEDULE" = "30 21 * * 1-5" ]; then
+            phase="eod"
+          else
+            phase="manual"
+          fi
+
+          # yfinance sometimes exposes a partial daily bar immediately after
+          # the close. build_cache refuses stale EOD data; retry before giving up.
+          attempts=3
+          for attempt in $(seq 1 $attempts); do
+            if python scripts/build_cache.py --phase "$phase" --retries 2 --retry-delay 30; then
+              exit 0
+            fi
+            if [ "$attempt" -lt "$attempts" ]; then
+              echo "Cache build failed/incomplete; retrying in 5 minutes ($attempt/$attempts)..."
+              sleep 300
+            fi
+          done
+          exit 1
 
       - name: Commit cache
         env:
