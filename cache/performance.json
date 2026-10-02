@@ -1,9 +1,15 @@
 {
-  "version": "4.0",
+  "version": "4.1",
   "last_updated": null,
   "summary": {
     "trade_count": 0,
+    "win_count": 0,
+    "loss_count": 0,
+    "breakeven_count": 0,
     "win_rate": null,
+    "gross_profit": 0.0,
+    "gross_loss": 0.0,
+    "net_pnl": 0.0,
     "profit_factor": null,
     "avg_rr_planned": null,
     "avg_rr_realized": null,
@@ -11,6 +17,12 @@
     "alpha_vs_qqq_pct": null,
     "alpha_vs_smh_pct": null
   },
+  "trades": [],
   "recent_decisions": [],
-  "notes": "This file stores strategy-level statistics only. Do not store account IDs, balances, positions, broker order IDs, fills, or private account data in this public repository."
+  "import": {
+    "source": null,
+    "last_imported_at": null,
+    "schema": "strategy_trade_v1"
+  },
+  "notes": "Strategy-level, sanitized statistics only. Never commit account IDs, balances, positions, broker order IDs, execution IDs, or other private broker data."
 }
