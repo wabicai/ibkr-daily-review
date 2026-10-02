@@ -1,28 +1,141 @@
 {
   "version": "4.1",
-  "last_updated": null,
+  "last_updated": "2026-10-02T14:35:00+00:00",
   "summary": {
-    "trade_count": 0,
-    "win_count": 0,
-    "loss_count": 0,
+    "trade_count": 14,
+    "win_count": 3,
+    "loss_count": 11,
     "breakeven_count": 0,
-    "win_rate": null,
-    "gross_profit": 0.0,
-    "gross_loss": 0.0,
-    "net_pnl": 0.0,
-    "profit_factor": null,
+    "win_rate": 0.2143,
+    "gross_profit": 367.4,
+    "gross_loss": -633.31,
+    "net_pnl": -265.91,
+    "profit_factor": 0.5801,
     "avg_rr_planned": null,
     "avg_rr_realized": null,
     "max_drawdown_pct": null,
     "alpha_vs_qqq_pct": null,
     "alpha_vs_smh_pct": null
   },
-  "trades": [],
+  "trades": [
+    {
+      "symbol": "GOOGL",
+      "entry_date": "2026-08-05",
+      "exit_date": "2026-09-22",
+      "realized_pnl": -20.37,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "closed"
+    },
+    {
+      "symbol": "MSFT",
+      "entry_date": "2026-07-14",
+      "exit_date": "2026-07-14",
+      "realized_pnl": -15.11,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "stop"
+    },
+    {
+      "symbol": "SMH",
+      "entry_date": "2026-07-09",
+      "exit_date": "2026-07-13",
+      "realized_pnl": -32.86,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "partial exits combined"
+    },
+    {
+      "symbol": "MRVL",
+      "entry_date": "2026-06-25",
+      "exit_date": "2026-07-07",
+      "realized_pnl": 9.44,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "multiple exits combined"
+    },
+    {
+      "symbol": "AMD",
+      "entry_date": "2026-06-25",
+      "exit_date": "2026-07-07",
+      "realized_pnl": -0.39,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "multiple exits combined"
+    },
+    {
+      "symbol": "MU",
+      "entry_date": "2026-06-29",
+      "exit_date": "2026-07-02",
+      "realized_pnl": -107.98,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "closed"
+    },
+    {
+      "symbol": "GLW",
+      "entry_date": "2026-06-29",
+      "exit_date": "2026-07-02",
+      "realized_pnl": -143.71,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "closed"
+    },
+    {
+      "symbol": "AAPL",
+      "entry_date": "2026-06-08",
+      "exit_date": "2026-06-26",
+      "realized_pnl": -78.38,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "multiple exits combined"
+    },
+    {
+      "symbol": "MRVL",
+      "entry_date": "2026-06-10",
+      "exit_date": "2026-06-23",
+      "realized_pnl": 89.98,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "closed"
+    },
+    {
+      "symbol": "MU",
+      "entry_date": "2026-06-11",
+      "exit_date": "2026-06-23",
+      "realized_pnl": 267.98,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "closed"
+    },
+    {
+      "symbol": "MU",
+      "entry_date": "2026-06-10",
+      "exit_date": "2026-06-10",
+      "realized_pnl": -21.08,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "closed"
+    },
+    {
+      "symbol": "AAPL",
+      "entry_date": "2026-06-04",
+      "exit_date": "2026-06-09",
+      "realized_pnl": -45.84,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "multiple exits combined"
+    },
+    {
+      "symbol": "MSFT",
+      "entry_date": "2026-05-29",
+      "exit_date": "2026-06-09",
+      "realized_pnl": -70.87,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "multiple exits combined"
+    },
+    {
+      "symbol": "NOK",
+      "entry_date": "2026-06-01",
+      "exit_date": "2026-06-05",
+      "realized_pnl": -96.72,
+      "entry_reason": "IBKR YTD reconstructed",
+      "exit_reason": "stop"
+    }
+  ],
   "recent_decisions": [],
   "import": {
-    "source": null,
-    "last_imported_at": null,
+    "source": "ibkr_connector_ytd_reconstruction",
+    "last_imported_at": "2026-10-02T14:35:00+00:00",
     "schema": "strategy_trade_v1"
   },
-  "notes": "Strategy-level, sanitized statistics only. Never commit account IDs, balances, positions, broker order IDs, execution IDs, or other private broker data."
+  "notes": "Strategy-level, sanitized statistics only. Reconstructed from IBKR YTD fills; multi-fill exits are combined by round trip. Never commit account IDs, balances, positions, broker order IDs, execution IDs, or other private broker data."
 }
