@@ -1,4 +1,4 @@
-# IBKR Daily Review v4.2 Professional Dashboard
+# IBKR Daily Review v4.3 Professional Dashboard
 
 本文件定义每日盘前、盘中和盘后输出格式。目标是输出可执行的限价交易计划。
 
@@ -98,3 +98,12 @@ Market Score、RR 或 Committee Score 不得单独作为机械的不交易原因
 如 `cache/performance.json` 有数据，展示交易次数、胜率、Profit Factor、平均计划 RR / 实现 RR、最大回撤和 Alpha vs QQQ / SMH。
 
 不得把账户 ID、订单 ID、成交回执或任何私人账户数据写入公开仓库。
+
+## 12. Review Timing & Entry Mode
+
+默认执行节奏以 America/New_York 为准：
+- 16:30–18:00 ET：Post-close Review，只选候选，不创建 BUY instruction。
+- 08:45–09:15 ET：Premarket Plan，校验隔夜变化与 Gap，只形成 provisional plan。
+- 09:45–10:15 ET：Opening Confirmation，开盘价格发现后才决定 Pullback / Breakout Retest / Momentum Entry，并允许创建或调整 BUY instruction。
+
+如果 10:00 ET 有高影响宏观数据，Opening Confirmation 应等待数据发布及初始反应。
