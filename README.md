@@ -19,7 +19,9 @@
 │   ├── analyze.py                       # 离线技术分析
 │   ├── portfolio_risk.py                # 本地持仓集中度与止损风险
 │   ├── market_regime.py                 # Risk-on / Neutral / Risk-off
-│   └── event_risk.py                    # 财报与重大事件窗口
+│   ├── event_risk.py                    # 财报与重大事件窗口
+│   ├── update_events.py                 # 自动刷新事件日历
+│   └── import_performance.py            # 导入脱敏后的真实策略交易
 ├── CLAUDE.md                            # 每日复盘与下单约定
 ├── RISK_MODULES.md                      # 新增风险模块说明
 └── requirements.txt
@@ -74,3 +76,20 @@ python scripts/analyze.py 2026-06-04
 ## 免责
 
 仓库提供数据与辅助分析，不保证收益。真实交易必须由用户在 IBKR 界面审核确认。
+
+
+## 策略统计同步
+
+`cache/performance.json` 只保存脱敏后的策略级数据。IBKR/其他券商数据应先由受信任的连接器整理成如下输入，再运行：
+
+```bash
+python scripts/import_performance.py trades.sanitized.json --source ibkr_connector
+```
+
+允许字段包括 symbol、entry/exit date、realized P/L、planned/realized RR、entry/exit reason、market/theme score。
+导入器会拒绝 account id、NAV、cash、positions、broker order/execution id 等私有字段。不要把原始券商导出提交到仓库。
+
+## 事件日历
+
+工作日自动运行 `scripts/update_events.py`。财报日期使用 yfinance 做发现，交易前仍必须用公司 IR 等一手来源复核；宏观日期采用仓库内人工审阅的高影响事件表。
+`events.json.metadata.status != ok` 或日历为空时，必须视为“事件数据不可靠”，不能视为“没有事件风险”。
