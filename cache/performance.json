@@ -137,5 +137,15 @@
     "last_imported_at": "2026-10-02T14:35:00+00:00",
     "schema": "strategy_trade_v1"
   },
-  "notes": "Strategy-level, sanitized statistics only. Reconstructed from IBKR YTD fills; multi-fill exits are combined by round trip. Never commit account IDs, balances, positions, broker order IDs, execution IDs, or other private broker data."
+  "notes": "Strategy-level, sanitized statistics only. Reconstructed from IBKR YTD fills; multi-fill exits are combined by round trip. Never commit account IDs, balances, positions, broker order IDs, execution IDs, or other private broker data.",
+  "execution_quality": {
+    "planned": 0,
+    "filled": 0,
+    "missed": 0,
+    "cancelled": 0,
+    "fill_rate": null,
+    "missed_winner_rate": null,
+    "records": [],
+    "note": "Track each actionable plan and subsequent move so entry conservatism can be evaluated separately from signal quality."
+  }
 }
