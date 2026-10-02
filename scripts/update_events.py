@@ -22,9 +22,9 @@ HORIZON_DAYS = 45
 # do not guess dates. New dates can be added independently of earnings fetching.
 MACRO_EVENTS = [
     {"date": "2026-10-02", "title": "US Employment Situation", "source": "BLS", "risk_level": "high"},
-    {"date": "2026-10-15", "title": "US CPI", "source": "BLS", "risk_level": "high"},
-    {"date": "2026-10-29", "title": "FOMC rate decision", "source": "Federal Reserve", "risk_level": "high"},
-    {"date": "2026-10-30", "title": "US Personal Income and Outlays / PCE", "source": "BEA", "risk_level": "high"},
+    {"date": "2026-10-14", "title": "US CPI", "source": "BLS", "risk_level": "high"},
+    {"date": "2026-10-28", "title": "FOMC rate decision", "source": "Federal Reserve", "risk_level": "high"},
+    {"date": "2026-10-29", "title": "US Personal Income and Outlays / PCE", "source": "BEA", "risk_level": "high"},
 ]
 
 
