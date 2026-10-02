@@ -18,6 +18,9 @@ def parse_day(value: str) -> date:
 def main() -> None:
     events_doc = json.loads(EVENTS.read_text())
     rules = json.loads(RULES.read_text())
+    metadata = events_doc.get("metadata", {})
+    status = metadata.get("status", "uninitialized")
+    last_updated = metadata.get("last_updated")
     today = date.today()
     blackout = int(rules["earnings_blackout_days"])
 
@@ -31,9 +34,15 @@ def main() -> None:
     upcoming.sort(key=lambda item: item[0])
     print("\nEVENT RISK")
     print("=" * 72)
+    print(f"calendar_status={status} last_updated={last_updated or 'never'}")
+    if status != "ok":
+        print("WARNING: event calendar is not fully reliable; verify primary sources before trading.")
     if not upcoming:
         print("No upcoming events configured.")
-        print("Populate config/events.json from reliable primary sources before trading.")
+        if status != "ok":
+            print("This MUST NOT be interpreted as no event risk; refresh/verify the calendar first.")
+        else:
+            print("Calendar is fresh but primary-source verification is still required before trading.")
         return
 
     for days, event in upcoming:
