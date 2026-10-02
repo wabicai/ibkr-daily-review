@@ -1,6 +1,6 @@
 {
-  "version": "4.2",
-  "name": "Professional dashboard trading workflow",
+  "version": "4.3",
+  "name": "Three-stage review and execution workflow",
   "objective": "每天只筛选 1-2 笔最合适的限价机会；由 AI 综合判断挂单、止损、仓位与风险，不使用固定分数或固定 RR 一票否决。",
   "max_daily_new_positions": 2,
   "preferred_new_positions": 1,
@@ -44,11 +44,70 @@
     "requires_investment_committee_approval": false,
     "requires_market_score_threshold": false,
     "ai_discretionary_approval": true,
-    "note": "只要 AI 判断限价、止损、仓位和风险组合合适，就可以创建非 live 的 IBKR order instruction；最终仍需用户在 IBKR 客户端确认。"
+    "note": "只要 AI 判断限价、止损、仓位和风险组合合适，就可以创建非 live 的 IBKR order instruction；最终仍需用户在 IBKR 客户端确认。",
+    "allowed_stage": "opening_confirmation"
   },
   "no_trade_report": {
     "enabled": true,
     "required_when_no_order": true,
-    "include_reasons": ["entry_price_unattractive", "stop_structure_invalid", "event_risk", "gap_too_extended", "cash_or_concentration_limit", "quote_unavailable", "ai_declined"]
+    "include_reasons": [
+      "entry_price_unattractive",
+      "stop_structure_invalid",
+      "event_risk",
+      "gap_too_extended",
+      "cash_or_concentration_limit",
+      "quote_unavailable",
+      "ai_declined"
+    ]
+  },
+  "execution_timing": {
+    "timezone": "America/New_York",
+    "stages": [
+      {
+        "id": "post_close_review",
+        "window_et": "16:30-18:00",
+        "purpose": "Use completed EOD bars to rank themes/candidates and define next-session scenarios.",
+        "may_create_order_instruction": false
+      },
+      {
+        "id": "premarket_plan",
+        "window_et": "08:45-09:15",
+        "purpose": "Refresh news/events/gaps and broker snapshots; produce provisional entries only.",
+        "may_create_order_instruction": false
+      },
+      {
+        "id": "opening_confirmation",
+        "window_et": "09:45-10:15",
+        "purpose": "Use first 15-45 minutes of price discovery to select entry mode and create/adjust executable instruction.",
+        "may_create_order_instruction": true
+      }
+    ],
+    "rule": "Post-close selects WHAT; premarket decides WHETHER the setup remains valid; opening confirmation decides HOW/WHERE to enter."
+  },
+  "entry_modes": {
+    "pullback": {
+      "enabled": true,
+      "description": "Normal pullback into support/breakout level with defined stop."
+    },
+    "breakout_retest": {
+      "enabled": true,
+      "description": "Breakout holds, then first retest confirms old resistance as support."
+    },
+    "momentum": {
+      "enabled": true,
+      "reference_position_pct_range": [
+        8,
+        10
+      ],
+      "description": "For exceptional relative strength when no deep pullback occurs. Require opening confirmation and smaller initial size; never chase blindly."
+    }
+  },
+  "execution_metrics": {
+    "track_planned": true,
+    "track_filled": true,
+    "track_missed": true,
+    "track_cancelled": true,
+    "track_subsequent_move": true,
+    "purpose": "Measure whether conservative limits avoid losses or systematically miss winners."
   }
 }

@@ -1,4 +1,4 @@
-# 每日美股 Watchlist 复盘 + v4.2 专业交易仪表盘
+# 每日美股 Watchlist 复盘 + v4.3 专业交易仪表盘
 
 请用中文回复。
 
@@ -171,3 +171,33 @@ AI 判断合适的候选即可进入交易计划。任何买入建议必须包�
 - 仓库公开，绝不提交任何账户私密数据。
 - 缓存用于历史分析，下单前必须用 IBKR broker snapshot 校验当前价。
 - 最终目标：AI 每天判断是否存在 1–2 笔价格合适、风险可控的限价交易。
+
+## 三阶段复盘与执行时间（v4.3）
+
+所有交易时间以 `America/New_York` 为准，自动适配美股夏令时/冬令时；北京时间仅作为展示换算，不作为规则源。
+
+### A. Post-close Review — 16:30–18:00 ET
+- 使用完整 EOD Bar 做 Market / Theme / Magnificent Seven / Candidate Ranking。
+- 目标是决定**明天看什么（WHAT）**。
+- 只生成候选池、关键价位、场景和失效条件。
+- **不得创建新的 BUY Order Instruction。**
+
+### B. Premarket Plan — 08:45–09:15 ET
+- 检查隔夜新闻、财报、宏观事件、Gap、IBKR Snapshot、现有持仓/Live Order/Saved Instruction。
+- 目标是决定**今天是否仍值得做（WHETHER）**。
+- 允许输出 provisional Trigger/Limit/Stop 区域，但默认**不创建新的 BUY Order Instruction**。
+- 不因为盘前 Gap Up 就把昨日 Pullback Limit 机械上移追价。
+
+### C. Opening Confirmation — 09:45–10:15 ET
+- 开盘至少 15 分钟后，观察第一轮价格发现、相对 QQQ/SMH 强弱、Gap 是否保持、首次回踩/突破回测。
+- 目标是决定**怎么进（HOW/WHERE）**。
+- 这是默认允许创建/调整 BUY Order Instruction 的主要窗口。
+- 10:00 ET 有重大宏观数据时，优先等数据落地和第一轮反应后再执行。
+
+### Entry Modes
+1. Pullback Entry：正常回踩关键支撑/突破位。
+2. Breakout Retest：突破后首次回踩确认旧阻力转支撑。
+3. Momentum Entry：只用于异常强势且不提供深回踩的标的；必须经过 Opening Confirmation，初始仓位参考 8–10% NAV，禁止无条件追涨。
+
+### 执行质量统计
+除已成交交易外，必须逐步统计 planned / filled / missed / cancelled / subsequent_move，用于判断限价策略是否系统性错过赢家。
