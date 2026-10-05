@@ -1,11 +1,243 @@
 {
-  "events": [],
+  "events": [
+    {
+      "symbol": "MARKET",
+      "event_type": "macro",
+      "date": "2026-10-14",
+      "title": "US CPI",
+      "source": "BLS",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "TSM",
+      "event_type": "earnings",
+      "date": "2026-10-15",
+      "title": "TSM earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "LRCX",
+      "event_type": "earnings",
+      "date": "2026-10-21",
+      "title": "LRCX earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "TSLA",
+      "event_type": "earnings",
+      "date": "2026-10-21",
+      "title": "TSLA earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "VRT",
+      "event_type": "earnings",
+      "date": "2026-10-21",
+      "title": "VRT earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "AMKR",
+      "event_type": "earnings",
+      "date": "2026-10-26",
+      "title": "AMKR earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "000660.KS",
+      "event_type": "earnings",
+      "date": "2026-10-27",
+      "title": "000660.KS earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "GLW",
+      "event_type": "earnings",
+      "date": "2026-10-27",
+      "title": "GLW earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "005930.KS",
+      "event_type": "earnings",
+      "date": "2026-10-28",
+      "title": "005930.KS earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "GOOGL",
+      "event_type": "earnings",
+      "date": "2026-10-28",
+      "title": "GOOGL earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "KLAC",
+      "event_type": "earnings",
+      "date": "2026-10-28",
+      "title": "KLAC earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "MARKET",
+      "event_type": "macro",
+      "date": "2026-10-28",
+      "title": "FOMC rate decision",
+      "source": "Federal Reserve",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "META",
+      "event_type": "earnings",
+      "date": "2026-10-28",
+      "title": "META earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "MSFT",
+      "event_type": "earnings",
+      "date": "2026-10-28",
+      "title": "MSFT earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "AAPL",
+      "event_type": "earnings",
+      "date": "2026-10-29",
+      "title": "AAPL earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "AMZN",
+      "event_type": "earnings",
+      "date": "2026-10-29",
+      "title": "AMZN earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "ENTG",
+      "event_type": "earnings",
+      "date": "2026-10-29",
+      "title": "ENTG earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "MARKET",
+      "event_type": "macro",
+      "date": "2026-10-29",
+      "title": "US Personal Income and Outlays / PCE",
+      "source": "BEA",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "SNDK",
+      "event_type": "earnings",
+      "date": "2026-10-29",
+      "title": "SNDK earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "285A.T",
+      "event_type": "earnings",
+      "date": "2026-10-30",
+      "title": "285A.T earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "PLTR",
+      "event_type": "earnings",
+      "date": "2026-11-02",
+      "title": "PLTR earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "ALAB",
+      "event_type": "earnings",
+      "date": "2026-11-03",
+      "title": "ALAB earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "AMD",
+      "event_type": "earnings",
+      "date": "2026-11-03",
+      "title": "AMD earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "ARM",
+      "event_type": "earnings",
+      "date": "2026-11-04",
+      "title": "ARM earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "COHR",
+      "event_type": "earnings",
+      "date": "2026-11-04",
+      "title": "COHR earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "AMAT",
+      "event_type": "earnings",
+      "date": "2026-11-12",
+      "title": "AMAT earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "NVDA",
+      "event_type": "earnings",
+      "date": "2026-11-17",
+      "title": "NVDA earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    }
+  ],
   "metadata": {
-    "last_updated": null,
+    "last_updated": "2026-10-05T14:31:18+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
-    "status": "uninitialized",
-    "note": "Run scripts/update_events.py. Empty events with status=uninitialized/stale must never be interpreted as no event risk."
+    "status": "degraded",
+    "earnings_lookup_no_event_or_failed": [
+      "MU",
+      "AVGO",
+      "MRVL",
+      "ORCL",
+      "QQQ",
+      "CRDO",
+      "PSTG",
+      "SPY",
+      "IWM",
+      "SMH",
+      "DRAM",
+      "TLT",
+      "GLD"
+    ],
+    "note": "Earnings use yfinance discovery and must be verified against primary IR sources before trading. Macro dates are reviewed constants."
   },
   "schema": {
     "symbol": "Ticker or MARKET",
