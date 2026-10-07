@@ -113,14 +113,6 @@
       "risk_level": "high"
     },
     {
-      "symbol": "AAPL",
-      "event_type": "earnings",
-      "date": "2026-10-29",
-      "title": "AAPL earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
       "symbol": "AMZN",
       "event_type": "earnings",
       "date": "2026-10-29",
@@ -157,6 +149,14 @@
       "event_type": "earnings",
       "date": "2026-10-30",
       "title": "285A.T earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "AAPL",
+      "event_type": "earnings",
+      "date": "2026-11-02",
+      "title": "AAPL earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
     },
@@ -218,7 +218,7 @@
     }
   ],
   "metadata": {
-    "last_updated": "2026-10-06T13:16:02+00:00",
+    "last_updated": "2026-10-07T13:17:24+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
