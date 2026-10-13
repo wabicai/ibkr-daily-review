@@ -25,6 +25,14 @@
       "risk_level": "high"
     },
     {
+      "symbol": "META",
+      "event_type": "earnings",
+      "date": "2026-10-21",
+      "title": "META earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
       "symbol": "TSLA",
       "event_type": "earnings",
       "date": "2026-10-21",
@@ -94,14 +102,6 @@
       "date": "2026-10-28",
       "title": "FOMC rate decision",
       "source": "Federal Reserve",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "META",
-      "event_type": "earnings",
-      "date": "2026-10-28",
-      "title": "META earnings",
-      "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
     },
     {
@@ -218,7 +218,7 @@
     }
   ],
   "metadata": {
-    "last_updated": "2026-10-12T15:16:59+00:00",
+    "last_updated": "2026-10-13T14:07:14+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
