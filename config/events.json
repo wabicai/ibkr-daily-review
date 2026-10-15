@@ -1,14 +1,6 @@
 {
   "events": [
     {
-      "symbol": "MARKET",
-      "event_type": "macro",
-      "date": "2026-10-14",
-      "title": "US CPI",
-      "source": "BLS",
-      "risk_level": "high"
-    },
-    {
       "symbol": "TSM",
       "event_type": "earnings",
       "date": "2026-10-15",
@@ -37,14 +29,6 @@
       "event_type": "earnings",
       "date": "2026-10-21",
       "title": "TSLA earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "VRT",
-      "event_type": "earnings",
-      "date": "2026-10-21",
-      "title": "VRT earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
     },
@@ -109,6 +93,14 @@
       "event_type": "earnings",
       "date": "2026-10-28",
       "title": "MSFT earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
+    },
+    {
+      "symbol": "VRT",
+      "event_type": "earnings",
+      "date": "2026-10-28",
+      "title": "VRT earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
     },
@@ -218,7 +210,7 @@
     }
   ],
   "metadata": {
-    "last_updated": "2026-10-14T11:47:40+00:00",
+    "last_updated": "2026-10-15T11:23:36+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
