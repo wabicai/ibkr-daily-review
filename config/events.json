@@ -1,14 +1,6 @@
 {
   "events": [
     {
-      "symbol": "TSM",
-      "event_type": "earnings",
-      "date": "2026-10-15",
-      "title": "TSM earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
       "symbol": "LRCX",
       "event_type": "earnings",
       "date": "2026-10-21",
@@ -207,10 +199,18 @@
       "title": "NVDA earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
+    },
+    {
+      "symbol": "CRDO",
+      "event_type": "earnings",
+      "date": "2026-11-30",
+      "title": "CRDO earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
     }
   ],
   "metadata": {
-    "last_updated": "2026-10-15T11:23:36+00:00",
+    "last_updated": "2026-10-16T11:18:18+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
@@ -218,9 +218,9 @@
       "MU",
       "AVGO",
       "MRVL",
+      "TSM",
       "ORCL",
       "QQQ",
-      "CRDO",
       "PSTG",
       "SPY",
       "IWM",
