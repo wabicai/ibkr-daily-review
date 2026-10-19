@@ -207,17 +207,24 @@
       "title": "CRDO earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
+    },
+    {
+      "symbol": "MRVL",
+      "event_type": "earnings",
+      "date": "2026-12-01",
+      "title": "MRVL earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
     }
   ],
   "metadata": {
-    "last_updated": "2026-10-16T11:18:18+00:00",
+    "last_updated": "2026-10-19T13:06:23+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
     "earnings_lookup_no_event_or_failed": [
       "MU",
       "AVGO",
-      "MRVL",
       "TSM",
       "ORCL",
       "QQQ",
