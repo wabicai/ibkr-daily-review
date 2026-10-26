@@ -191,16 +191,23 @@
       "title": "MRVL earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
+    },
+    {
+      "symbol": "AVGO",
+      "event_type": "earnings",
+      "date": "2026-12-09",
+      "title": "AVGO earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
     }
   ],
   "metadata": {
-    "last_updated": "2026-10-23T11:33:50+00:00",
+    "last_updated": "2026-10-26T12:54:49+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
     "earnings_lookup_no_event_or_failed": [
       "MU",
-      "AVGO",
       "LRCX",
       "TSM",
       "META",
