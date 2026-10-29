@@ -3,48 +3,8 @@
     {
       "symbol": "005930.KS",
       "event_type": "earnings",
-      "date": "2026-10-28",
+      "date": "2026-10-29",
       "title": "005930.KS earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "GOOGL",
-      "event_type": "earnings",
-      "date": "2026-10-28",
-      "title": "GOOGL earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "KLAC",
-      "event_type": "earnings",
-      "date": "2026-10-28",
-      "title": "KLAC earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "MARKET",
-      "event_type": "macro",
-      "date": "2026-10-28",
-      "title": "FOMC rate decision",
-      "source": "Federal Reserve",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "MSFT",
-      "event_type": "earnings",
-      "date": "2026-10-28",
-      "title": "MSFT earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "VRT",
-      "event_type": "earnings",
-      "date": "2026-10-28",
-      "title": "VRT earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
     },
@@ -178,15 +138,18 @@
     }
   ],
   "metadata": {
-    "last_updated": "2026-10-28T12:47:24+00:00",
+    "last_updated": "2026-10-29T12:55:18+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
     "earnings_lookup_no_event_or_failed": [
       "MU",
       "LRCX",
+      "KLAC",
       "TSM",
+      "MSFT",
       "META",
+      "GOOGL",
       "TSLA",
       "ORCL",
       "QQQ",
@@ -194,6 +157,7 @@
       "GLW",
       "AMKR",
       "PSTG",
+      "VRT",
       "SPY",
       "IWM",
       "SMH",
