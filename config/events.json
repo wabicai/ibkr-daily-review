@@ -1,46 +1,6 @@
 {
   "events": [
     {
-      "symbol": "005930.KS",
-      "event_type": "earnings",
-      "date": "2026-10-29",
-      "title": "005930.KS earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "AMZN",
-      "event_type": "earnings",
-      "date": "2026-10-29",
-      "title": "AMZN earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "ENTG",
-      "event_type": "earnings",
-      "date": "2026-10-29",
-      "title": "ENTG earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "MARKET",
-      "event_type": "macro",
-      "date": "2026-10-29",
-      "title": "US Personal Income and Outlays / PCE",
-      "source": "BEA",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "SNDK",
-      "event_type": "earnings",
-      "date": "2026-10-29",
-      "title": "SNDK earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
       "symbol": "285A.T",
       "event_type": "earnings",
       "date": "2026-10-30",
@@ -135,10 +95,18 @@
       "title": "AVGO earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
+    },
+    {
+      "symbol": "ORCL",
+      "event_type": "earnings",
+      "date": "2026-12-14",
+      "title": "ORCL earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
     }
   ],
   "metadata": {
-    "last_updated": "2026-10-29T12:55:18+00:00",
+    "last_updated": "2026-10-30T12:48:56+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
@@ -148,11 +116,12 @@
       "KLAC",
       "TSM",
       "MSFT",
+      "AMZN",
       "META",
       "GOOGL",
       "TSLA",
-      "ORCL",
       "QQQ",
+      "SNDK",
       "000660.KS",
       "GLW",
       "AMKR",
@@ -163,7 +132,9 @@
       "SMH",
       "DRAM",
       "TLT",
-      "GLD"
+      "GLD",
+      "ENTG",
+      "005930.KS"
     ],
     "note": "Earnings use yfinance discovery and must be verified against primary IR sources before trading. Macro dates are reviewed constants."
   },
