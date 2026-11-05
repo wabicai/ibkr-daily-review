@@ -1,22 +1,6 @@
 {
   "events": [
     {
-      "symbol": "ARM",
-      "event_type": "earnings",
-      "date": "2026-11-04",
-      "title": "ARM earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
-      "symbol": "COHR",
-      "event_type": "earnings",
-      "date": "2026-11-04",
-      "title": "COHR earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
       "symbol": "AMAT",
       "event_type": "earnings",
       "date": "2026-11-12",
@@ -74,7 +58,7 @@
     }
   ],
   "metadata": {
-    "last_updated": "2026-11-04T14:27:03+00:00",
+    "last_updated": "2026-11-05T14:35:05+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
@@ -94,9 +78,11 @@
       "QQQ",
       "SNDK",
       "000660.KS",
+      "COHR",
       "GLW",
       "AMKR",
       "ALAB",
+      "ARM",
       "VRT",
       "SPY",
       "IWM",
