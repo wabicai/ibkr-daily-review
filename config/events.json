@@ -55,16 +55,23 @@
       "title": "ORCL earnings",
       "source": "yfinance (verify primary IR source before trading)",
       "risk_level": "high"
+    },
+    {
+      "symbol": "MU",
+      "event_type": "earnings",
+      "date": "2026-12-23",
+      "title": "MU earnings",
+      "source": "yfinance (verify primary IR source before trading)",
+      "risk_level": "high"
     }
   ],
   "metadata": {
-    "last_updated": "2026-11-06T14:12:27+00:00",
+    "last_updated": "2026-11-09T16:09:51+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
     "earnings_lookup_no_event_or_failed": [
       "AMD",
-      "MU",
       "LRCX",
       "KLAC",
       "TSM",
