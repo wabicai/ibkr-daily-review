@@ -1,14 +1,6 @@
 {
   "events": [
     {
-      "symbol": "AMAT",
-      "event_type": "earnings",
-      "date": "2026-11-12",
-      "title": "AMAT earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
       "symbol": "NVDA",
       "event_type": "earnings",
       "date": "2026-11-17",
@@ -66,13 +58,14 @@
     }
   ],
   "metadata": {
-    "last_updated": "2026-11-12T15:06:49+00:00",
+    "last_updated": "2026-11-13T14:30:20+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
     "earnings_lookup_no_event_or_failed": [
       "AMD",
       "LRCX",
+      "AMAT",
       "KLAC",
       "TSM",
       "AAPL",
