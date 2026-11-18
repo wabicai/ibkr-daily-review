@@ -1,14 +1,6 @@
 {
   "events": [
     {
-      "symbol": "NVDA",
-      "event_type": "earnings",
-      "date": "2026-11-17",
-      "title": "NVDA earnings",
-      "source": "yfinance (verify primary IR source before trading)",
-      "risk_level": "high"
-    },
-    {
       "symbol": "PSTG",
       "event_type": "earnings",
       "date": "2026-11-18",
@@ -58,11 +50,12 @@
     }
   ],
   "metadata": {
-    "last_updated": "2026-11-17T15:56:03+00:00",
+    "last_updated": "2026-11-18T15:34:57+00:00",
     "source_mode": "generated",
     "horizon_days": 45,
     "status": "degraded",
     "earnings_lookup_no_event_or_failed": [
+      "NVDA",
       "AMD",
       "LRCX",
       "AMAT",
