@@ -3,6 +3,8 @@
   "warning_position_pct": 25,
   "max_theme_pct": 55,
   "min_cash_pct": 10,
+  "preferred_cash_pct_after_new_trades": 35,
+  "min_cash_pct_after_new_trades": 30,
   "risk_per_trade_pct": null,
   "risk_per_trade_mode": "ai_dynamic",
   "max_total_stop_risk_pct": null,
@@ -13,6 +15,47 @@
   "current_price_source": "broker_snapshot",
   "cached_premarket_usage": "fallback_only",
   "require_current_quote": true,
+  "execution_style": "limit_only",
+  "allow_market_order": false,
+  "requires_defined_stop": true,
+  "rr_policy": {
+    "mode": "advisory_only",
+    "hard_gate": false,
+    "reference_rr": 2.2,
+    "description": "RR must be displayed and assessed, but no fixed RR automatically blocks an order instruction. AI decides whether the limit entry, stop and expected upside are acceptable."
+  },
+  "committee_policy": {
+    "mode": "advisory_only",
+    "hard_gate": false,
+    "reference_score": 85,
+    "description": "Committee scoring remains visible for decision quality, but no fixed score automatically blocks an order instruction."
+  },
+  "max_daily_new_positions": 2,
+  "preferred_daily_new_positions": 1,
+  "market_score_policy": {
+    "mode": "advisory_only",
+    "hard_gate": false,
+    "description": "Market Score is market context and a position-sizing input. It must not automatically veto an otherwise suitable limit order."
+  },
+  "context_trade_policy": {
+    "ENTG": "context_only",
+    "005930.KS": "context_only",
+    "285A.T": "context_only"
+  },
+  "etf_grouping": {
+    "broad_market": ["QQQ", "SPY", "IWM"],
+    "max_new_broad_market_etfs": 1,
+    "sector_etfs": ["SMH", "DRAM"],
+    "defensive_etfs": ["TLT", "GLD"]
+  },
+  "v4_gates": {
+    "enabled": true,
+    "no_trade_report_required": true,
+    "only_best_candidates": true,
+    "market_score_gate_enabled": false,
+    "rr_gate_enabled": false,
+    "committee_score_gate_enabled": false
+  },
   "protective_stop_required_for_positions": true,
   "protective_stop_mode": "ai_dynamic",
   "protective_stop_review_frequency": "daily",

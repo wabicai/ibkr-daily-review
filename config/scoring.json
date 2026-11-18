@@ -1,0 +1,68 @@
+{
+  "version": "4.2",
+  "market_score": {
+    "total": 100,
+    "policy": "advisory_only",
+    "hard_gate": false,
+    "components": {
+      "qqq_trend": 20,
+      "smh_trend": 20,
+      "breadth_and_risk_appetite": 20,
+      "macro_and_rates": 20,
+      "news_and_event_risk": 20
+    },
+    "regime_thresholds": {
+      "strong_risk_on": 85,
+      "risk_on": 75,
+      "neutral": 60,
+      "risk_off": 0
+    },
+    "interpretation": "Regime label and sizing context only. No score automatically blocks a trade."
+  },
+  "magnificent_seven": {
+    "enabled": true,
+    "tradable": true,
+    "symbols": ["AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "TSLA"],
+    "comparison_fields": ["broker_price", "change_pct", "trend", "relative_strength_vs_qqq", "relative_strength_vs_group", "volume_confirmation", "candidate_score", "action"],
+    "breadth": {
+      "enabled": true,
+      "metrics": ["advancers", "decliners", "above_ma20", "above_ma50", "outperforming_qqq"]
+    },
+    "leadership_score": {
+      "enabled": true,
+      "components": ["trend", "relative_strength_vs_qqq", "group_rank", "volume_confirmation", "news_quality"]
+    }
+  },
+  "candidate_score": {
+    "total": 100,
+    "policy": "advisory_only",
+    "components": {
+      "trend": 30,
+      "relative_strength": 20,
+      "theme_strength": 15,
+      "news_quality": 15,
+      "risk_reward_and_execution": 20
+    },
+    "rating_thresholds": {
+      "five_star": 85,
+      "four_star": 75,
+      "three_star": 60,
+      "watch_only": 0
+    },
+    "interpretation": "Candidate Score and stars help ranking but do not create a mandatory entry threshold."
+  },
+  "ai_investment_committee": {
+    "enabled": true,
+    "policy": "advisory_and_explanatory",
+    "hard_gate": false,
+    "reference_score": 85,
+    "members": {
+      "trend": {"weight": 20, "description": "趋势是否健康，是否在 MA20/MA50 上方或重新转强。"},
+      "relative_strength": {"weight": 20, "description": "是否跑赢 QQQ、SMH、七姐妹组合或所属主题 ETF。"},
+      "news": {"weight": 20, "description": "隔夜新闻、财报、监管和事件风险是否支持交易。"},
+      "macro": {"weight": 20, "description": "利率、美元、油价、地缘和市场风险偏好。Market Score 仅作为输入。"},
+      "risk": {"weight": 20, "description": "仓位、主题集中度、现金、止损距离、RR 和执行价格是否合理。"}
+    },
+    "voting_rule": "委员会分数与 RR 均为参考。只要 AI 综合判断限价、止损、仓位、现金、集中度、事件风险和成交条件合适，即可生成等待用户确认的 order instruction。"
+  }
+}

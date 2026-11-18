@@ -1,168 +1,203 @@
-# 每日美股 Watchlist 复盘 + 下单助手
+# 每日美股 Watchlist 复盘 + v4.3 专业交易仪表盘
 
 请用中文回复。
 
-本仓库是 GitHub Actions 每个交易日美东收盘后通过 yfinance 自动更新的 OHLCV 缓存层。读取这份缓存的 Claude 会连接 **IBKR connector**，**有实际下单能力**——所以输出的不只是「建议」，而是会被执行的交易决策。务必按下面的风控规则走。
+本仓库由 GitHub Actions 每个交易日更新 OHLCV 缓存。复盘时连接 IBKR connector 获取账户、持仓、订单和实时行情；AI 综合判断限价、止损、仓位、现金、集中度和事件风险后，可创建等待用户在 IBKR 客户端确认的 order instruction。
 
-## 下单流程
+## 核心原则
 
-**如果 IBKR connector 已连接** → 直接通过 connector 发起订单请求即可。**不需要在对话里再让用户敲一遍"确认"**——IBKR 客户端/桌面软件本身会弹二次确认窗口，所有真正的"按下回车"动作都在用户那边完成。你的职责是把信号转成结构化订单请求然后调用 connector。
+1. 每天优先筛选 1–2 笔最合适的限价交易，不为交易而交易。
+2. 输出必须是可执行的交易作战计划。
+3. 当前价、触发价、限价、止损、股数、RR 和仓位计算必须使用 IBKR broker snapshot。
+4. `cache/latest.json` 仅用于历史 K 线、MA20、MA50、RSI、量能比、相对强弱、支撑阻力和缓存日期。
+5. `cached_premarket_usage=fallback_only`、`current_price_source=broker_snapshot`、`require_current_quote=true`。
+6. 单笔风险与总止损风险由 AI 动态评估，不使用固定 1% 上限。
+7. `signal_confirmation_days=0`、`trade_cooldown_days=0` 时，不机械等待。
+8. Market Score、Candidate Score、Committee Score 和 RR 均保留，但只作为分析、排序和风险参考，不作为固定硬门槛。
+9. 不再要求 RR >= 2.2，也不再要求 Committee >= 85。
+10. 只要 AI 判断挂单价格、止损、仓位和整体风险合适，即可生成非 live order instruction。
+11. 美股七姐妹全部是可交易候选，并必须进行每日横向对比。
+12. 没有合适挂单时，必须明确写：**今日不操作**。
 
-**如果 IBKR connector 未连接** → 退化为参考模式：在 Step 5 输出待执行订单清单，让用户自己手动在 IBKR 客户端下单。
+## 配置文件读取顺序
 
-### 仍然要遵守的硬规则
+每次复盘必须读取：
 
-1. **每个买单必须配套止损单**（OCO 或独立 STP），止损价按 `Step 4` 算。
-2. **下单前用 IBKR connector 拉一次实时 `snapshot` 验真当前价**——缓存是 EOD 数据，盘中天然滞后；`snapshot` 和 `cache.snapshot.price` 的偏离只说明缓存不是实时行情。实时下单价格、股数校验和止损距离都以最新 `snapshot` 为准，必要时按实时价重算风控参数。
-3. 报告里始终展示每笔单的：标的 / 方向 / 股数 / 限价 / 止损 / 理由——透明度优先，方便用户在 IBKR 弹窗里核对。
-4. **不要使用固定 1% 单笔风险上限。** `risk_per_trade_pct: null` 且 `risk_per_trade_mode: ai_dynamic` 时，由 AI 结合整体组合、仓位、现金、止损距离、风险收益比、市场状态、主题集中度、财报事件和信号质量动态判断。不要仅因为止损风险超过账户净值 1% 就否决订单。
-5. `signal_confirmation_days = 0` 和 `trade_cooldown_days = 0` 时，不要求机械等待确认天数或冷却期；由 AI 直接判断信号质量。
+1. `CLAUDE.md`
+2. `RISK_MODULES.md`
+3. `config/watchlist.json`
+4. `config/risk_rules.json`
+5. `config/events.json`
+6. `config/strategy.json`
+7. `config/scoring.json`
+8. `cache/latest.json`
+9. 如存在：`cache/performance.json`
+10. 如存在：`docs/DASHBOARD.md`
+
+## 下单规则
+
+- instruction 不是 live order，必须等待用户在 IBKR 客户端确认。
+- 每个买入建议仍必须有明确止损。
+- connector 不支持 bracket/OCO/STP 时，必须明确止损不是 live stop。
+- 每笔订单必须展示：标的、方向、股数、限价、止损、RR、理由。
+- 默认 `limit_only`，不允许市价追高。
+- RR 可以低于 2.2，只要 AI 能解释为何当前挂单仍合理。
+- Committee 可以低于 85，只要 AI 能解释风险、优势和失效条件。
+- 不得把账户 ID、余额、持仓、订单或成交回执写入公开仓库。
 
 ## Watchlist 分层
 
 `config/watchlist.json` 使用四层结构：
 
-1. **core**：每天优先分析，AI 基础设施核心池。
-2. **satellite**：卫星池，memory/storage/optical/connectivity/power cooling 等扩展主题，有强信号时可交易。
-3. **etf**：ETF 池，既用于市场状态，也可交易。
-4. **context**：仅作为主题和市场背景，不生成订单，除非用户明确提升为 candidate。
+1. `core`：每日优先分析。
+2. `satellite`：强信号时可交易。
+3. `etf`：既做市场状态，也可交易。
+4. `context`：只做背景，不生成订单，除非用户明确提升为 candidate。
 
-当前 Memory / Storage 规则：
+Memory / Storage：
 
-- MU 是核心池标的。
-- SNDK 和 SK 海力士（`000660.KS`）是卫星池，可在信号足够强、IBKR 可交易且风险收益比合理时生成订单指令。
-- 三星电子（`005930.KS`）和 Kioxia（`285A.T`）暂时只作为 context，用于判断 memory/NAND 行业状态，不直接交易。
+- MU 是 core。
+- SNDK 和 `000660.KS` 是 satellite。
+- `005930.KS` 和 `285A.T` 是 context。
+- ENTG 是 context。
 
-`auto_opportunity_pool` 只作为研究指令：每天可额外扫描 5–10 只美股 AI 基础设施机会，但不要自动写入仓库；连续强势且主题匹配时，在报告里建议提升到 satellite/core。
+ETF：
 
-## ETF 与 context 规则
+- QQQ、SPY、IWM、SMH、DRAM、TLT、GLD 均可交易。
+- QQQ、SPY、IWM 同一复盘周期最多新建一只。
+- SMH、DRAM 按行业 ETF 单独计算。
+- TLT、GLD 按防御资产计算。
 
-QQQ、SPY、IWM、SMH、TLT、GLD 虽然承担 benchmark 或 context 作用，但同时允许作为可交易 ETF 生成买入、卖出、持有和观察建议；不要因为其角色而禁止交易。
+## 美股七姐妹
 
-ENTG 继续仅作为 context，不生成交易建议或订单指令。
+每日必须对比以下可交易标的：AAPL、MSFT、NVDA、AMZN、META、GOOGL、TSLA。
 
-为避免重复暴露，QQQ、SPY、IWM 这三只宽基 ETF 同时最多新建一只；SMH 作为行业 ETF 单独计算，TLT 和 GLD 作为防御资产单独计算。
+七姐妹需要展示：
 
-不要把“QQQ 和 SMH 开盘后至少稳定 1 小时”或“候选股高开不得超过 3%”作为必要条件；应结合实时价格、趋势、风险收益比和整体市场状态直接判断。
+- IBKR 当前价与涨跌幅
+- 趋势
+- 相对 QQQ 强弱
+- 组内排名
+- 成交量确认
+- Candidate Score
+- 操作结论
 
----
+同时计算上涨/下跌家数、MA20/MA50 上方家数、跑赢 QQQ 家数和 Leadership Ranking。
 
-## 分析参数
-
-- **趋势基准**：MA20 / MA50（日线收盘价）
-- **辅助指标**：RSI 14 日（Wilder 平滑法）
-- **相对强弱**：标的近 20 日涨幅 − QQQ 同期涨幅
-- **量能**：近 5 日均量 ÷ 近 20 日均量
-- **风格**：趋势交易，中长周期；无明确信号则「观察/持有」
+七姐妹参与统一 Candidate Ranking，可在 AI 判断限价、止损、仓位、现金、集中度和事件风险合适时生成 order instruction。
 
 ## 每日执行流程
 
 ### Step 0 — 数据获取
 
-1. **优先 `git -C <repo路径> pull --ff-only`** 拉一次远端最新缓存。
-2. 读 `cache/latest.json`。
-3. 看 `market_data["QQQ"].snapshot.as_of`：
-   - 等于今天 → ✅ 用，报告首行注明 `📦 数据日期 YYYY-MM-DD`。
-   - 是上一个交易日（今天美股没开盘 / Actions 还没跑）→ ⚠️ 报告首行说明「最新可用数据为 YYYY-MM-DD」再继续。
-   - 超过 3 个交易日 → 提示用户检查 Actions 是否失败，先不出报告。
-4. 连接 IBKR 获取账户净值、现金、持仓、成交记录、未成交订单和最新行情。
+1. 读取全部配置与缓存。
+2. 验证缓存日期；超过 3 个交易日则提示检查 Actions，不出完整交易计划。
+3. 从 IBKR 获取账户净值、现金、持仓、未成交订单、已保存 instructions 和 broker snapshots。
+4. 当前价必须来自 IBKR snapshot。
 
-### Step 1 — 持仓核算
+### Step 1 — Dashboard
 
-仓库本身不存持仓。优先使用 IBKR connector 的实时账户数据；无 connector 时才使用用户提供的持仓或本地 `positions.local.json`。
+输出数据日期、价格源、账户净值、现金比例、持仓数、未成交订单数、Market Score、AI Confidence 和最终动作。
 
-拿到持仓后，对每只票算：
+### Step 2 — Market Score
 
-- 当前市值
-- 仓位占比
-- 未实现盈亏
-- 止损风险
-- 所属主题集中度
+计算 QQQ 趋势、SMH 趋势、市场广度与风险偏好、宏观与利率、新闻与事件风险。Market Score 只用于环境和仓位参考，不是订单准入条件。
 
-### Step 2 — 技术指标
+### Step 3 — 美股七姐妹 Monitor
 
-逐票计算：
+输出七姐妹完整对比、Breadth 和 Leadership Ranking。七姐妹是可交易候选。
 
-```text
-MA20         = mean(close[-20:])
-MA50         = mean(close[-50:])
-RSI(14)      = Wilder 平滑法
-量能比       = mean(volume[-5:]) / mean(volume[-20:])
-相对强弱     = (close[-1]/close[-21] - 1)*100 − (QQQ_close[-1]/QQQ_close[-21] - 1)*100
-趋势         = price>MA20>MA50 → 上升↑
-               price<MA20<MA50 → 下降↓
-               否则             → 盘整→
-```
+### Step 4 — Theme Ranking
 
-实时价用于触发条件、限价、止损和风险收益比；日线指标仍按缓存历史数据计算。
+至少覆盖 AI Infrastructure、Semiconductor、Memory / Storage、Networking / ASIC、Semiconductor Equipment、AI Software、Mega-cap Platforms、AI Autonomy / Robotics、Defensive Assets。
 
-### Step 3 — 信号判定
+### Step 5 — Candidate Ranking
 
-**减仓警示**（满足任一即触发）：
+最多输出前 8 个候选。每个候选包含 IBKR 当前价、主题、Candidate Score、星级、操作结论和核心理由。
 
-- `当前价 < MA20` 且 `量能比 > 1.2` 且 `当前价 < 昨收`
-- `当前价 < min(近 5 日收盘) × 0.99`（跌破近期低点）
+### Step 6 — Risk Center
 
-**加仓 / 建仓候选**（无减仓信号，且下列至少 3 项成立）：
+检查单票仓位、主题集中度、现金、财报黑窗、重大事件、止损距离和总体止损风险。
 
-- `当前价 > MA20`
-- `MA20 > MA50`
-- `量能比 > 1.5` 且 `当前价 > 昨收`
-- `50 ≤ RSI(14) ≤ 70`
-- `相对强弱 ≥ 0`（跑赢 QQQ）
+### Step 7 — AI Investment Committee
 
-同时必须通过 `config/risk_rules.json` 中的仓位、主题集中度、现金比例和财报黑窗规则。单笔风险和总止损风险使用 AI 动态评估，不使用固定 1% 或固定总风险上限。
+五项评分：Trend、Relative Strength、News、Macro、Risk。
 
-否则 → 观察/持有。
+委员会输出用于解释和比较，不设固定批准分数。RR 也不设固定最低值。AI 应综合判断：
 
-### Step 4 — 操作建议
+- 限价是否有吸引力
+- 止损是否合理
+- 仓位是否与风险匹配
+- 现金和集中度是否允许
+- 财报和事件风险是否可接受
+- 当前成交和市场结构是否支持挂单
 
-对每个持仓和候选标的输出：
+### Step 8 — Trading Plan
 
-- 持有、减仓、止损、平仓、建仓或观察结论
-- 当前价、MA20、MA50、RSI
-- 支撑、阻力、参考入场区间
-- 止损 = 近 2 周最低 × 0.97，或按实时风险收益比重算
-- 触发条件、股数、限价、止损和理由
+AI 判断合适的候选即可进入交易计划。任何买入建议必须包含触发条件、股数、限价、止损、计划风险金额、RR 和失效条件。默认只给 1 笔，最多 2 笔。
 
-任何买入建议必须包含触发条件、股数、限价和止损。
+### Step 9 — Execution
 
-### Step 5 — 汇总 + 下单
+| Action | Symbol | Shares | Limit | Stop | RR | Status |
+|---|---|---:|---:|---:|---:|---|
 
-把 Step 4 里有高质量信号且通过全部风控的票汇总成结构化订单。
+没有合适机会时输出：
 
-**Connector 已连接**：可以直接调用 IBKR connector 发起订单请求（每个买单带止损单）。报告里列出已发起的订单清单，方便用户在 IBKR 客户端弹窗里核对。实际成交以 IBKR 客户端二次确认后的结果为准。
+> 今日不操作。
 
-**Connector 未连接**：退化为参考模式，输出同样格式但状态写「待手动下单」。
+并附 No Trade Report。
 
-没有高质量信号时明确写“不操作”。
+### Step 10 — Strategy Statistics
 
-## 输出结构
+如 `cache/performance.json` 有数据，展示交易次数、胜率、Profit Factor、平均计划 RR / 实现 RR、最大回撤和 Alpha vs QQQ / SMH。
 
-1. 数据日期和账户摘要
-2. 市场状态
-3. 当日表现归因
-4. 持仓逐票复盘
-5. core / satellite / ETF 候选逐票复盘
-6. Memory / Storage 主题专项观察
-7. 风险检查
-8. 财报与事件风险
-9. 盘前计划有效性复盘
-10. 下一交易日条件单预案或已发起订单指令
-11. 最终结论：操作或不操作
+## 标准输出结构
 
-## 数据更新机制
-
-两个 GitHub Actions cron 跑同一个 `build_cache.py`，缓存里始终带最新的盘前 snapshot：
-
-- **盘前 cron**：`0 13 * * 1-5` (UTC)
-- **EOD cron**：`30 21 * * 1-5` (UTC)
-- **手动触发**：`gh workflow run daily-update.yml -R wabicai/ibkr-daily-review`
-- **本地手动更新**：`python scripts/build_cache.py`
+1. Dashboard
+2. Market Score
+3. Magnificent Seven Monitor
+4. Theme Ranking
+5. Candidate Ranking
+6. Trading Plan
+7. Risk Center
+8. AI Investment Committee
+9. Execution
+10. No Trade Report（如适用）
+11. Strategy Statistics
+12. 最终结论
 
 ## 重要约定
 
-- 本仓库公开：绝不把持仓 / 账户 / 订单回执 / 任何带账号 ID 的数据 push 进来。
-- 持仓、账户和订单回执只在对话或 IBKR connector 中使用，不写入仓库。
-- Connector 连上时可以发起订单请求，最终确认交给 IBKR 客户端弹窗。
-- 盘前/盘中数据滞后：缓存用于决策前置分析，下单前务必用 IBKR connector 拉实时行情校验当前价。
+- 仓库公开，绝不提交任何账户私密数据。
+- 缓存用于历史分析，下单前必须用 IBKR broker snapshot 校验当前价。
+- 最终目标：AI 每天判断是否存在 1–2 笔价格合适、风险可控的限价交易。
+
+## 三阶段复盘与执行时间（v4.3）
+
+所有交易时间以 `America/New_York` 为准，自动适配美股夏令时/冬令时；北京时间仅作为展示换算，不作为规则源。
+
+### A. Post-close Review — 16:30–18:00 ET
+- 使用完整 EOD Bar 做 Market / Theme / Magnificent Seven / Candidate Ranking。
+- 目标是决定**明天看什么（WHAT）**。
+- 只生成候选池、关键价位、场景和失效条件。
+- **不得创建新的 BUY Order Instruction。**
+
+### B. Premarket Plan — 08:45–09:15 ET
+- 检查隔夜新闻、财报、宏观事件、Gap、IBKR Snapshot、现有持仓/Live Order/Saved Instruction。
+- 目标是决定**今天是否仍值得做（WHETHER）**。
+- 允许输出 provisional Trigger/Limit/Stop 区域，但默认**不创建新的 BUY Order Instruction**。
+- 不因为盘前 Gap Up 就把昨日 Pullback Limit 机械上移追价。
+
+### C. Opening Confirmation — 09:45–10:15 ET
+- 开盘至少 15 分钟后，观察第一轮价格发现、相对 QQQ/SMH 强弱、Gap 是否保持、首次回踩/突破回测。
+- 目标是决定**怎么进（HOW/WHERE）**。
+- 这是默认允许创建/调整 BUY Order Instruction 的主要窗口。
+- 10:00 ET 有重大宏观数据时，优先等数据落地和第一轮反应后再执行。
+
+### Entry Modes
+1. Pullback Entry：正常回踩关键支撑/突破位。
+2. Breakout Retest：突破后首次回踩确认旧阻力转支撑。
+3. Momentum Entry：只用于异常强势且不提供深回踩的标的；必须经过 Opening Confirmation，初始仓位参考 8–10% NAV，禁止无条件追涨。
+
+### 执行质量统计
+除已成交交易外，必须逐步统计 planned / filled / missed / cancelled / subsequent_move，用于判断限价策略是否系统性错过赢家。
